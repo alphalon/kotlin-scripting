@@ -1,0 +1,64 @@
+#!/bin/bash
+#
+# Kotlin script runner
+#
+# Uses kscript:
+# brew install holgerbrandl/tap/kscript
+# brew uninstall --force kscript
+
+# TODO: implement bash completion!
+# https://askubuntu.com/questions/68175/how-to-create-script-with-auto-complete
+# symlink to /usr/local/etc/bash_completion.d
+
+if [ -z "$1" ]; then
+  echo "usage: ko <script> [args...]"
+  exit 1
+fi
+
+function find-script {
+  if [ -d "$2" ]; then
+    files=( $(find "$2" -name "$1*.kts" -maxdepth 1 -type f) )
+    count=${#files[@]}
+
+    if [[ $count == 1 ]]; then
+      SCRIPT=${files[0]}
+    fi
+  fi
+}
+
+# Search for script to execute
+find-script "$1" .
+if [ -z "$SCRIPT" ]; then
+  find-script "$1" bin
+fi
+if [ -z "$SCRIPT" ]; then
+  find-script "$1" scripts
+fi
+if [ -z "$SCRIPT" ]; then
+  if [ -f "ko.kts" ]; then
+    SCRIPT="ko.kts"
+  fi
+else
+  shift
+fi
+if [ -z "$SCRIPT" ]; then
+  echo "could not find script matching '$1'"
+  exit 1
+fi
+
+# Install kscript
+hash kscript 2>/dev/null
+rc=$?
+if [[ $rc != 0 ]]; then
+  echo "installing kscript"
+  brew install holgerbrandl/tap/kscript
+  rc=$?
+  if [[ $rc != 0 ]]; then
+    echo "error installing kscript"
+    exit 2
+  fi
+fi
+
+# Execute script
+# echo "executing $SCRIPT"
+kscript "$SCRIPT" "$@"
