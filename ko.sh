@@ -67,6 +67,7 @@ function find-repository {
   # echo "Did not find a repository"
 }
 
+# Searches upward within a repository or user directory for the highest project directory
 function find-project {
   # echo "Searching for project"
   local top="${KO_REPO-$HOME}"
@@ -85,6 +86,7 @@ function find-project {
   done
 }
 
+# Searches upward for the nearest module directory
 function find-module {
   # echo "Searching for module"
   local top="${KO_PROJECT-$HOME}"
@@ -106,8 +108,10 @@ function find-module {
   # echo "Did not find a module, using project"
 }
 
+# Joins an array of strings using the first arg as a separator
 function join_by { local d=$1; shift; echo -n "$1"; shift; printf "%s" "${@/#/$d}"; }
 
+# Builds an array of directories for searching via relative paths
 function make-search-roots {
   # construct array of default roots
   local sr=()
@@ -121,6 +125,7 @@ function make-search-roots {
   KO_SEARCH_ROOTS=$(join_by : "${sr[@]}")
 }
 
+# Adds additional search roots
 function add-search-roots {
   IFS=':' read -ra sr <<< "$KO_SEARCH_ROOTS"
   IFS=':' read -ra asr <<< "$KO_ADDITIONAL_SEARCH_ROOTS"
@@ -131,6 +136,7 @@ function add-search-roots {
   KO_SEARCH_ROOTS=$(join_by : "${sr[@]}")
 }
 
+# Adds search paths to each root and returns a path of directories contains scripts
 function make-search-path {
   IFS=':' read -ra sr <<< "$KO_SEARCH_ROOTS"
   local sp=("$PWD")
@@ -146,6 +152,53 @@ function make-search-path {
   # remove duplicates
   sp=($(echo ${sp[@]} | tr [:space:] '\n' | awk '!a[$0]++'))
   export KO_SEARCH_PATH=$(join_by : "${sp[@]}")
+}
+
+# Adds matches to the list of scripts
+function find-script {
+  if [[ -d $2 ]]; then
+    files=( $(find "$2" \( -iname "$1*.kts" -o -iname "$1*.kt" \) -maxdepth 1 -type f) )
+    for f in "${files[@]}"; do
+      SCRIPTS+=("$f")
+    done
+  fi
+}
+
+# Checks the contents of the script for a run directory spec
+function get-dir-from-script {
+  DIR_SPEC=$(sed -n '/^\/\/DIR / s/\/\/DIR //p' "${KO_SCRIPT}")
+  if [[ ! -z $DIR_SPEC ]]; then
+    # echo "Found directory specification: {DIR_SPEC"
+    if [[ $DIR_SPEC == \$* ]]; then
+      # echo "Evaluating $DIR_SPEC"
+      NAME=${DIR_SPEC:1}
+      KO_DIR=${!NAME}
+      # echo "Evaluated to $KO_DIR"
+
+      if [[ -z $KO_DIR ]]; then
+        echo "Unable to resolve directory specified by environment variable $NAME"
+        exit 1
+      fi
+    elif [[ $DIR_SPEC == ~* ]]; then
+      # echo "Evaluating $DIR_SPEC"
+      eval KO_DIR=${DIR_SPEC}
+      # echo "Evaluated to $KO_DIR"
+
+      if [[ -z $KO_DIR ]]; then
+        echo "Unable to resolve directory specified by environment variable $NAME"
+        exit 1
+      fi
+    else
+      # Trim leading and trailing whitespace
+      KO_DIR=$(echo -e "$DIR_SPEC" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    fi
+
+    if [[ ! -d $KO_DIR ]]; then
+      echo "Specified run directory does not exist: $DIR_SPEC"
+      exit 1
+    fi
+    # echo "Running script in $KO_DIR"
+  fi
 }
 
 # Find well-known locations
@@ -170,15 +223,6 @@ if [[ $VERBOSE -gt 0 ]]; then
   echo "Module:      $KO_MODULE"
   echo "Search path: $KO_SEARCH_PATH"
 fi
-
-function find-script {
-  if [[ -d $2 ]]; then
-    files=( $(find "$2" \( -iname "$1*.kts" -o -iname "$1*.kt" \) -maxdepth 1 -type f) )
-    for f in "${files[@]}"; do
-      SCRIPTS+=("$f")
-    done
-  fi
-}
 
 COMMAND=$1
 
@@ -225,39 +269,7 @@ fi
 
 # Determine directory to run script
 KO_DIR=
-DIR_SPEC=$(sed -n '/^\/\/DIR / s/\/\/DIR //p' "${KO_SCRIPT}")
-if [[ ! -z $DIR_SPEC ]]; then
-  # echo "Found directory specification: {DIR_SPEC"
-  if [[ $DIR_SPEC == \$* ]]; then
-    # echo "Evaluating $DIR_SPEC"
-    NAME=${DIR_SPEC:1}
-    KO_DIR=${!NAME}
-    # echo "Evaluated to $KO_DIR"
-
-    if [[ -z $KO_DIR ]]; then
-      echo "Unable to resolve directory specified by environment variable $NAME"
-      exit 1
-    fi
-  elif [[ $DIR_SPEC == ~* ]]; then
-    # echo "Evaluating $DIR_SPEC"
-    eval KO_DIR=${DIR_SPEC}
-    # echo "Evaluated to $KO_DIR"
-
-    if [[ -z $KO_DIR ]]; then
-      echo "Unable to resolve directory specified by environment variable $NAME"
-      exit 1
-    fi
-  else
-    # Trim leading and trailing whitespace
-    KO_DIR=$(echo -e "$DIR_SPEC" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-  fi
-
-  if [[ ! -d $KO_DIR ]]; then
-    echo "Specified run directory does not exist: $DIR_SPEC"
-    exit 1
-  fi
-  # echo "Running script in $KO_DIR"
-fi
+get-dir-from-script
 if [[ -z $KO_DIR ]]; then
   KO_DIR="$PWD"
 fi
