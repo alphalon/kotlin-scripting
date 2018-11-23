@@ -59,3 +59,7 @@ fi
 
 # Build project library and install in local maven repository
 ./gradlew publishToMavenLocal
+
+# Save version number
+version=$(./gradlew properties -q 2>/dev/null | grep "version:" | awk '{print $2}' | tr -d '[:space:]')
+echo "export KO_VERSION=\"$version\"" >version.sh

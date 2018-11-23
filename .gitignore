@@ -1,5 +1,11 @@
+# Gradle
 .gradle
-.idea
 build
-out
+
+# IntelliJ
+.idea
 *.iml
+out
+
+# Project
+version.sh

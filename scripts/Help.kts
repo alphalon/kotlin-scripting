@@ -14,11 +14,13 @@
 // @file:CompilerOpts("-jvm-target 1.8")
 // @file:EntryPoint("Foo.bar")
 
+//CMD Help Provides information about available commands
+
 @file:DependsOn("io.alphalon.kotlin:kotlin-scripting:0.1-SNAPSHOT")
 
 import io.alphalon.kotlin.scripting.Framework
 
-println("Kotlin Scripting ${Framework.libraryVersion}")
+println("Kotlin Scripting Library ${Framework.libraryVersion}")
 println()
 
 // Output related directories
