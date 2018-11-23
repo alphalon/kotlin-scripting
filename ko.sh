@@ -242,6 +242,63 @@ function get-dir-from-script {
   fi
 }
 
+# Create a script in the nearest location on the search path
+# Args: command
+function create-script {
+  IFS=':' read -ra sp <<< "$KO_SEARCH_PATH"
+  local sd=()
+  for p in "${sp[@]}"; do
+    if [[ -d $p ]]; then sd+=("$p"); fi
+  done
+  unset 'sd[${#sd[@]}-1]'
+
+  if [[ ${#sd[@]} -gt 1 ]]; then
+    local dir="${sd[1]}"
+  else
+    local dir="${sd[0]}"
+  fi
+  local script="$dir/$1.kts"
+
+  if [[ ! -e "$script" ]]; then
+    # Create new script file
+    # echo "Creating new script: $script"
+    cp "$KO_HOME/scripts/ko.template" "$script"
+    sed -i .tmp "s:<file>:$(basename "$script"):g" "$script"
+    sed -i .tmp "s/<command>/$COMMAND/g" "$script"
+    if [[ -n $KO_VERSION ]]; then
+      sed -i .tmp "s/<version>/$KO_VERSION/g" "$script"
+    fi
+    rm -f "${script}.tmp"
+
+    EDIT=2
+  else
+    echo "ERROR: Script $script already exists"
+    exit 1
+  fi
+
+  if [[ $VERBOSE -gt 0 ]]; then
+    echo "Created new script: $script"
+  fi
+}
+
+# Edits the script with the preferred editor
+# Args: file
+function edit-script {
+  if [[ -n $VISUAL ]]; then
+    $VISUAL $KO_SCRIPT
+  elif [[ -n $EDITOR ]]; then
+    $EDITOR $KO_SCRIPT
+  else
+    echo "ERROR: editor not specified by VISUAL or EDITOR environment variable"
+    exit 1
+  fi
+
+  # Make executable if '#!' is present
+  if [[ "$(head -c 2 "$KO_SCRIPT")" == "#!" && ! -x "$KO_SCRIPT" ]]; then
+    chmod ug+x "$KO_SCRIPT"
+  fi
+}
+
 # Find well-known locations
 find-repository
 find-project
@@ -273,41 +330,7 @@ fi
 
 # Create new script in closest location
 if [[ $CREATE == 1 ]]; then
-  IFS=':' read -ra sp <<< "$KO_SEARCH_PATH"
-  local sd=()
-  for p in "${sp[@]}"; do
-    if [[ -d $p ]]; then sd+=("$p"); fi
-  done
-  unset 'sd[${#sd[@]}-1]'
-
-  if [[ ${#sd[@]} -gt 1 ]]; then
-    local dir="${sd[1]}"
-  else
-    local dir="${sd[0]}"
-  fi
-  local script="$dir/$COMMAND.kts"
-
-  if [[ ! -e "$script" ]]; then
-    # Create new script file
-    # echo "Creating new script: $script"
-    cp "$KO_HOME/template.kts" "$script"
-    chmod ug+x "$script"
-    sed -i .tmp "s:<file>:$(basename "$script"):g" "$script"
-    sed -i .tmp "s/<command>/$COMMAND/g" "$script"
-    if [[ -n $KO_VERSION ]]; then
-      sed -i .tmp "s/<version>/$KO_VERSION/g" "$script"
-    fi
-    rm -f "${script}.tmp"
-
-    EDIT=2
-  else
-    echo "ERROR: Script $script already exists"
-    exit 1
-  fi
-
-  if [[ $VERBOSE -gt 0 ]]; then
-    echo "Created new script: $script"
-  fi
+  create-script "$COMMAND"
 fi
 
 # Search for matching script
@@ -350,7 +373,10 @@ if [[ -z $KO_DIR ]]; then
 fi
 
 # Pass command as first argument to ko.kt{s} scripts
-if [[ $KO_SCRIPT != "ko.kts" && $KO_SCRIPT !=  "ko.kt" ]]; then
+if [[ $KO_SCRIPT == "ko.kts" || $KO_SCRIPT == "ko.kt" ]]; then
+  # TODO: Expand command to what the script expects
+  :
+else
   shift
 fi
 
@@ -362,16 +388,9 @@ if [[ $VERBOSE -gt 0 ]]; then
   echo
 fi
 
-if [[ $EDIT == 1 ]]; then
+if [[ $EDIT -gt 0 ]]; then
   # Edit found script
-  if [[ -n $VISUAL ]]; then
-    $VISUAL $KO_SCRIPT
-  elif [[ -n $EDITOR ]]; then
-    $EDITOR $KO_SCRIPT
-  else
-    echo "Editor not specified by VISUAL or EDITOR environment variable"
-    exit 1
-  fi
+  edit-script "$KO_SCRIPT"
 elif [[ $KO_DIR != $PWD ]]; then
   # Execute script in specified directory
   pushd "$KO_DIR" >/dev/null
