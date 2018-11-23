@@ -18,12 +18,14 @@ if [[ -z $1 ]]; then
   echo "  ko [options...] <command> [args...]"
   echo
   echo "The command can be an abbreviation for finding the script to execute,"
-  echo "while the arguments are passed on to that script."
+  echo "while the arguments are passed on to that script. In general, the options"
+  echo "are mutually exclusive."
   echo
   echo "Options:"
   echo "  -c,--create     Creates and edits a new script named <command>.kts"
   echo "  -e,--edit       Edits the existing script for <command>"
   echo "  -f,--file       Prints the filename of the matching script"
+  echo "  -d,--dir        Prints the directory containing the matching script"
   echo "  -v,--version    Prints the version"
   echo "  --verbose       Prints information about the process"
   echo
@@ -35,11 +37,13 @@ while [[ -n $1 && $1 == -* ]]; do
   case $1 in
   "-c" | "--create") CREATE_SCRIPT=1; shift;;
   "-e" | "--edit") EDIT_SCRIPT=1; shift;;
+  "-i" | "--idea") IDEA_SCRIPT=1; shift;;
   "-f" | "--file") PRINT_FILE=1; shift;;
+  "-d" | "--dir") PRINT_DIR=1; shift;;
   "-v" | "--version") PRINT_VERSION=1; shift;;
   "--verbose") VERBOSE=1; shift;;
   "--debug") DEBUG=1; shift;;
-  *) echo "Ignoring unknown option: $1";;
+  *) echo "Ignoring unknown option: $1"; shift;;
   esac
 done
 
@@ -99,8 +103,8 @@ function find-repository {
       if [[ -e "$dir/$marker" ]]; then
         export KO_REPO="$dir"
         # echo "Found repository at $KO_REPO"
-        if [[ $marker == ".ko_repo" ]]; then
-          source "$dir/$marker"
+        if [[ -f "$dir/.ko_repo" ]]; then
+          source "$dir/.ko_repo"
         fi
         break
       fi
@@ -124,8 +128,8 @@ function find-project {
         export KO_PROJECT="$dir"
         export KO_PROJECT_FILE="$(compgen -G "$dir/$marker")"
         # echo "Found possible project at $KO_PROJECT"
-        if [[ $marker == ".ko_project" ]]; then
-          source "$dir/$marker"
+        if [[ -f "$dir/.ko_project" ]]; then
+          source "$dir/.ko_project"
         fi
         break
       fi
@@ -146,8 +150,8 @@ function find-module {
       if compgen -G "$dir/$marker" > /dev/null; then
         export KO_MODULE="$dir"
         # echo "Found module at ${KO_MODULE}"
-        if [[ $marker == ".ko_module" ]]; then
-          source "$dir/$marker"
+        if [[ -f "$dir/.ko_module" ]]; then
+          source "$dir/.ko_module"
         fi
         return
       fi
@@ -415,11 +419,18 @@ if [[ $VERBOSE -gt 0 ]]; then
   echo
 fi
 
-if [[ $EDIT_SCRIPT -gt 0 ]]; then
+if [[ $IDEA_SCRIPT -gt 0 ]]; then
+  # Edit found script in IDEA
+  pushd "$(dirname "$KO_SCRIPT")" >/dev/null
+  kscript --idea "$(basename "$KO_SCRIPT")"
+  popd >/dev/null
+elif [[ $EDIT_SCRIPT -gt 0 ]]; then
   # Edit found script
   edit-script "$KO_SCRIPT"
 elif [[ $PRINT_FILE -gt 0 ]]; then
   echo "$KO_SCRIPT"
+elif [[ $PRINT_DIR -gt 0 ]]; then
+  echo "$(dirname "$KO_SCRIPT")"
 elif [[ $KO_DIR != $PWD ]]; then
   # Execute script in specified directory
   pushd "$KO_DIR" >/dev/null
