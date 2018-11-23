@@ -74,6 +74,28 @@ This uses the same search resolution as executing a script (partial command matc
 
 Alternatively, `ko -i <command>` leverages kscript to create a temporary project and edit the file using IntelliJ IDEA.
 
+### Script conventions
+
+The framework defines two special comments that can be placed in your Kotlin scripts:
+
+```kotlin
+//DIR <dir-spec>
+```
+
+The DIR comments specifies in which directory the script should be executed. If not present, scripts will be executed in the current directory.
+
+The _dir-spec_ supports an absolute path, a path relative to the home directory using the tilde notation, and variable substitution to an absolute path.
+
+For example, to always a particular script run in the project directory, add the `//DIR $KO_PROJECT` comment to your file. 
+
+```kotlin
+//CMD <command> <multi-word description>
+```
+
+The `//CMD` comment is used for documenting the available commands. If not present, the command name is taken from the script name and no description will be shown when the commands are listed.
+
+This comment is required for command resolution in `ko.kts` and `ko.kt` scripts that support executing multiple commands in a single file where the first argument is the command. These special scripts are only searched for in search roots (like the project directory).
+
 ### Configuration
 
 Several environment variables can be set to modify the behavior of the run script:
