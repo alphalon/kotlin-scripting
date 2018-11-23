@@ -8,4 +8,4 @@ build
 out
 
 # Project
-version.sh
+/scripts/ko-framework-version.sh

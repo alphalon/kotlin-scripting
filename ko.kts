@@ -9,5 +9,7 @@
 //DIR $HOME
 //CMD hello Say hello
 //CMD goodbye Say goodbye
+//CMD * Matches any otherwise unmatched command
 
 println("ko args: ${args.joinToString(separator = " ")}")
+println("Run in ${System.getenv("user.dir")}")

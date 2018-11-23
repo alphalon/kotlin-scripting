@@ -17,37 +17,34 @@ if [[ -z $1 ]]; then
   echo "Usage:"
   echo "  ko [options...] <command> [args...]"
   echo
-  echo "The command can be an abbreviation for the script to execute, while"
-  echo "the arguments are passed on to the discovered command script."
+  echo "The command can be an abbreviation for finding the script to execute,"
+  echo "while the arguments are passed on to that script."
   echo
   echo "Options:"
   echo "  -c,--create     Creates and edits a new script named <command>.kts"
   echo "  -e,--edit       Edits the existing script for <command>"
-  echo "  -v,--verbose    Prints information about the process"
-  echo "  --version       Prints the version"
+  echo "  -f,--file       Prints the filename of the matching script"
+  echo "  -v,--version    Prints the version"
+  echo "  --verbose       Prints information about the process"
   echo
-  exit 1
+  exit 0
 fi
 
 # Process options
-VERBOSE=
-CREATE=
-EDIT=
-VERSION=
-
-while [[ -n $1 && $1 = -* ]]; do
+while [[ -n $1 && $1 == -* ]]; do
   case $1 in
-  "-v" | "--verbose") VERBOSE=1; shift;;
-  "-c" | "--create") CREATE=1; shift;;
-  "-e" | "--edit") EDIT=1; shift;;
-  "--version") VERSION=1; shift;;
+  "-c" | "--create") CREATE_SCRIPT=1; shift;;
+  "-e" | "--edit") EDIT_SCRIPT=1; shift;;
+  "-f" | "--file") PRINT_FILE=1; shift;;
+  "-v" | "--version") PRINT_VERSION=1; shift;;
+  "--verbose") VERBOSE=1; shift;;
+  "--debug") DEBUG=1; shift;;
   *) echo "Ignoring unknown option: $1";;
   esac
 done
 
 # Find the directory containing this script
 SOURCE="${BASH_SOURCE[0]}"
-# resolve until the file is no longer a symlink
 while [[ -h $SOURCE ]]; do
   KO_HOME="$(cd -P "$(dirname "$SOURCE")" && pwd)"
   SOURCE="$(readlink "$SOURCE")"
@@ -56,25 +53,40 @@ done
 export KO_HOME="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 
 # Get version from build
-if [[ -f "$KO_HOME/version.sh" ]]; then
-  source "$KO_HOME/version.sh"
+if [[ -f "$KO_HOME/scripts/ko-framework-version.sh" ]]; then
+  source "$KO_HOME/scripts/ko-framework-version.sh"
 fi
-if [[ -n $VERSION ]]; then
+if [[ -n $PRINT_VERSION ]]; then
   echo "ko $KO_VERSION"
   exit 0
 fi
 
+# Adds additional markers/paths to the array
+# Args: array-name var-name
+function add-to-array {
+  if [[ -n ${!2} ]]; then
+    IFS=':' read -ra ms <<< "${!2}"
+    for m in "${ms[@]}"; do
+      eval "${1}+=("$m")"
+    done
+  fi
+}
+
 # Files or directories marking the repository root directory
 REPO_MARKERS=(".git" ".svn")
+add-to-array "REPO_MARKERS" "KO_ADDITIONAL_REPO_MARKERS"
 
 # Files marking project root directories
-PROJECT_MARKERS=("build.gradle" "build.gradle.kts" "pom.xml" "project.clj" "*.xcworkspace" "*.xcodeproj" "package.json" "build.boot" "deps.clj" "build.xml" "Makefile" "CMakeLists.txt" "setup.py" "gradlew" "build.sbt" "Gemfile" ".ko_project")
+PROJECT_MARKERS=("build.gradle" "build.gradle.kts" "project.clj" "pom.xml" "*.xcworkspace" "*.xcodeproj" "*.iml" "build.boot" "deps.clj" "build.xml" "Makefile" "CMakeLists.txt" "setup.py" "build.sbt" "package.json" "Gemfile" ".ko_project")
+add-to-array "PROJECT_MARKERS" "KO_ADDITIONAL_PROJECT_MARKERS"
 
 # Files marking module directories
 MODULE_MARKERS=("build.gradle" "build.gradle.kts" "pom.xml" "*.xcodeproj" "package.json" ".ko_module")
+add-to-array "MODULE_MARKERS" "KO_ADDITIONAL_MODULE_MARKERS"
 
 # Subdirectories used for searching for scripts along the search roots
-SEARCH_PATHS=("bin" "scripts")
+SEARCH_DIRS=("bin" "scripts")
+add-to-array "SEARCH_DIRS" "KO_ADDITIONAL_SEARCH_DIRS"
 
 # Searches upward for the top-most directory representing a code repository
 function find-repository {
@@ -107,6 +119,7 @@ function find-project {
       # echo "Checking for marker $marker"
       if compgen -G "$dir/$marker" > /dev/null; then
         export KO_PROJECT="$dir"
+        export KO_PROJECT_FILE="$(compgen -G "$dir/$marker")"
         # echo "Found possible project at $KO_PROJECT"
         break
       fi
@@ -149,7 +162,7 @@ function make-search-roots {
   if [[ -n $KO_REPO ]]; then sr+=("$KO_REPO"); fi
   sr+=("$HOME")
   # remove duplicates
-  sr=($(echo ${sr[@]} | tr [:space:] '\n' | awk '!a[$0]++'))
+  sr=($(echo "${sr[@]}" | tr [:space:] '\n' | awk '!a[$0]++'))
   # construct multiple path string
   KO_SEARCH_ROOTS=$(join_by : "${sr[@]}")
 }
@@ -161,7 +174,7 @@ function add-search-roots {
   for r in "${asr[@]}"; do
     sr+=(r)
   done
-  sr=($(echo ${sr[@]} | tr [:space:] '\n' | awk '!a[$0]++'))
+  sr=($(echo "${sr[@]}" | tr [:space:] '\n' | awk '!a[$0]++'))
   KO_SEARCH_ROOTS=$(join_by : "${sr[@]}")
 }
 
@@ -174,7 +187,7 @@ function make-search-path {
   for r in "${sr[@]}"; do
     if [[ -f "$r/ko.kts" ]]; then sp+=("$r/ko.kts"); fi
     if [[ -f "$r/ko.kt" ]]; then sp+=("$r/ko.kt"); fi
-    for p in "${SEARCH_PATHS[@]}"; do
+    for p in "${SEARCH_DIRS[@]}"; do
       local dir="$r/$p"
       if [[ -d $dir ]]; then
         # echo "Adding $dir to search path"
@@ -186,7 +199,7 @@ function make-search-path {
     sp+=("$KO_HOME/scripts")
   fi
   # remove duplicates
-  sp=($(echo ${sp[@]} | tr [:space:] '\n' | awk '!a[$0]++'))
+  sp=($(echo "${sp[@]}" | tr [:space:] '\n' | awk '!a[$0]++'))
   export KO_SEARCH_PATH=$(join_by : "${sp[@]}")
 }
 
@@ -222,7 +235,7 @@ function get-dir-from-script {
       # echo "Evaluated to $KO_DIR"
 
       if [[ -z $KO_DIR ]]; then
-        echo "Unable to resolve directory specified by environment variable $name"
+        echo "ERROR: unable to resolve directory specified by environment variable $name in script"
         exit 1
       fi
     elif [[ $spec == ~* ]]; then
@@ -235,7 +248,7 @@ function get-dir-from-script {
     fi
 
     if [[ ! -d $KO_DIR ]]; then
-      echo "Specified run directory does not exist: $spec"
+      echo "ERROR: directory specified in script does not exist: $spec"
       exit 1
     fi
     # echo "Running script in $KO_DIR"
@@ -252,6 +265,7 @@ function create-script {
   done
   unset 'sd[${#sd[@]}-1]'
 
+  # Don't prefer current directory
   if [[ ${#sd[@]} -gt 1 ]]; then
     local dir="${sd[1]}"
   else
@@ -261,7 +275,10 @@ function create-script {
 
   if [[ ! -e "$script" ]]; then
     # Create new script file
-    # echo "Creating new script: $script"
+    if [[ ! -f "$KO_HOME/scripts/ko.template" ]]; then
+      echo "ERROR: unable to locate script template"
+      exit 1
+    fi
     cp "$KO_HOME/scripts/ko.template" "$script"
     sed -i .tmp "s:<file>:$(basename "$script"):g" "$script"
     sed -i .tmp "s/<command>/$COMMAND/g" "$script"
@@ -270,7 +287,7 @@ function create-script {
     fi
     rm -f "${script}.tmp"
 
-    EDIT=2
+    EDIT_SCRIPT=2
   else
     echo "ERROR: Script $script already exists"
     exit 1
@@ -289,13 +306,13 @@ function edit-script {
   elif [[ -n $EDITOR ]]; then
     $EDITOR $KO_SCRIPT
   else
-    echo "ERROR: editor not specified by VISUAL or EDITOR environment variable"
+    echo "ERROR: editor not specified by either VISUAL or EDITOR environment variable"
     exit 1
   fi
 
   # Make executable if '#!' is present
   if [[ "$(head -c 2 "$KO_SCRIPT")" == "#!" && ! -x "$KO_SCRIPT" ]]; then
-    chmod ug+x "$KO_SCRIPT"
+    chmod u+x "$KO_SCRIPT"
   fi
 }
 
@@ -316,20 +333,21 @@ if [[ -z $KO_SEARCH_PATH ]]; then
 fi
 
 if [[ $VERBOSE -gt 0 ]]; then
-  echo "Repository:  $KO_REPO"
-  echo "Project:     $KO_PROJECT"
-  echo "Module:      $KO_MODULE"
-  echo "Search path: $KO_SEARCH_PATH"
+  echo "Repository:     $KO_REPO"
+  echo "Project:        $KO_PROJECT"
+  echo "Module:         $KO_MODULE"
+  echo "Project File:   $KO_PROJECT_FILE"
+  echo "Search path:    $KO_SEARCH_PATH"
 fi
 
 COMMAND=$1
 if [[ -z $COMMAND ]]; then
-  echo "The command parameter has not been specified"
+  echo "ERROR: the command parameter has not been specified"
   exit 1
 fi
 
 # Create new script in closest location
-if [[ $CREATE == 1 ]]; then
+if [[ $CREATE_SCRIPT == 1 ]]; then
   create-script "$COMMAND"
 fi
 
@@ -348,11 +366,11 @@ done
 
 # Check to make sure we only found one script
 if [[ ${#SCRIPTS[@]} -eq 0 ]]; then
-  echo "Could not find script matching '$COMMAND'"
+  echo "ERROR: could not find script matching '$COMMAND'"
   exit 1
 fi
 if [[ ${#SCRIPTS[@]} -gt 1 ]]; then
-  echo "Found too many scripts matching '$COMMAND':"
+  echo "ERROR: found too many scripts matching '$COMMAND':"
   for s in "${SCRIPTS[@]}"; do
     echo "$s"
   done
@@ -362,7 +380,7 @@ export KO_SCRIPT="${SCRIPTS[0]}"
 export KO_SCRIPT_DIR="$(basename "$KO_SCRIPT")"
 
 if [[ $VERBOSE -gt 0 ]]; then
-  echo "Script:      $KO_SCRIPT"
+  echo "Script:         $KO_SCRIPT"
 fi
 
 # Determine directory to run script
@@ -375,22 +393,24 @@ fi
 # Pass command as first argument to ko.kt{s} scripts
 if [[ $KO_SCRIPT == "ko.kts" || $KO_SCRIPT == "ko.kt" ]]; then
   # TODO: Expand command to what the script expects
-  :
+  set -- "$COMMAND" "${@:2}"
 else
   shift
 fi
 
 if [[ $VERBOSE -gt 0 ]]; then
-  echo "Run dir:     $KO_DIR"
+  echo "Run dir:        $KO_DIR"
   if [[ "${#@}" -gt 0 ]]; then
-    echo "Arguments:   $@"
+    echo "Arguments:      $@"
   fi
   echo
 fi
 
-if [[ $EDIT -gt 0 ]]; then
+if [[ $EDIT_SCRIPT -gt 0 ]]; then
   # Edit found script
   edit-script "$KO_SCRIPT"
+elif [[ $PRINT_FILE -gt 0 ]]; then
+  echo "$KO_SCRIPT"
 elif [[ $KO_DIR != $PWD ]]; then
   # Execute script in specified directory
   pushd "$KO_DIR" >/dev/null

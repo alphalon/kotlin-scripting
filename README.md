@@ -4,19 +4,43 @@ This project consists of two parts: a shell script for running scripts written i
 
 The Kotlin scripts are compiled and executed by the kscript command line tool whose project is located on [Github](https://github.com/holgerbrandl/kscript). See the kscript project for details on writing scripts in either `.kt` or '.kts`' files and specifying things like dependencies on other libraries including this one.
 
-## The ko script
+## Scripting Framework
 
 The primary purpose of this wrapper script is to locate the Kotlin script to execute. The first argument specifies the command to execute which is matched against the Kotlin script filenames from multiple directories through a search path to well-known locations within a repository or project.
 
+### Configuration
 
+Several environment variables can be set to modify the behavior of the run script:
 
-## The Kotlin Scripting library
+- `KO_ADDITIONAL_SEARCH_ROOTS` - color-separated list of search root directories
+- `KO_ADDITIONAL_SEARCH_DIRS` - colon-separated list of subdirectories below search roots to find scripts
+- `KO_ADDITIONAL_REPO_MARKERS` - additional markers used to locate the repository directory
+- `KO_ADDITIONAL_PROJECT_MARKERS` - additional markers used to locate project directories
+- `KO_ADDITIONAL_MODULE_MARKERS` - additional markers used to local modules within a project
+
+### Runtime environment
+
+These environment variables are available to your Kotlin script when called via the `ko` script:
+
+- `KO_HOME` - the directory of the `ko` script
+- `KO_VERSION` - the version of the `ko` script
+- `KO_SCRIPT` - the filename of the script being executed
+- `KO_SCRIPT_DIR` - the directory of the script file being executed
+- `KO_SEARCH_PATH` - the list of files and directories used to search for scripts
+- `KO_REPO` - the top-level directory of the source code repository, optional
+- `KO_PROJECT` - the top-level directory of current project, optional
+- `KO_MODULE` - the nearest directory representing a module, optional
+- `KO_PROJECT_FILE` - the primary build file used for the project
+
+## Scripting Library
 
 ## Requirements
 
 - Java 8
-- Kotlin 1.3
-- Maven 3.6
+- Gradle 4.10 - for building this project
+- Kotlin 1.3 - for compiling this project and scripts
+- Maven 3.6 - required by kscript
+- kscript 1.2
 
 ## Installation
 
