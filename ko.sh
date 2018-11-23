@@ -73,7 +73,7 @@ function add-to-array {
 }
 
 # Files or directories marking the repository root directory
-REPO_MARKERS=(".git" ".svn")
+REPO_MARKERS=(".git" ".svn" ".ko_repo")
 add-to-array "REPO_MARKERS" "KO_ADDITIONAL_REPO_MARKERS"
 
 # Files marking project root directories
@@ -99,7 +99,10 @@ function find-repository {
       if [[ -e "$dir/$marker" ]]; then
         export KO_REPO="$dir"
         # echo "Found repository at $KO_REPO"
-        return
+        if [[ $marker == ".ko_repo" ]]; then
+          source "$dir/$marker"
+        fi
+        break
       fi
     done
     dir=$(dirname "$dir")
@@ -121,6 +124,9 @@ function find-project {
         export KO_PROJECT="$dir"
         export KO_PROJECT_FILE="$(compgen -G "$dir/$marker")"
         # echo "Found possible project at $KO_PROJECT"
+        if [[ $marker == ".ko_project" ]]; then
+          source "$dir/$marker"
+        fi
         break
       fi
     done
@@ -140,6 +146,9 @@ function find-module {
       if compgen -G "$dir/$marker" > /dev/null; then
         export KO_MODULE="$dir"
         # echo "Found module at ${KO_MODULE}"
+        if [[ $marker == ".ko_module" ]]; then
+          source "$dir/$marker"
+        fi
         return
       fi
     done
