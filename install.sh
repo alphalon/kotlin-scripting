@@ -1,15 +1,29 @@
 #!/usr/bin/env bash
 #
 # Builds and installs Kotlin Scripting for use on the local machine
+#
+# Copyright (c) 2018 Alphalon, LLC. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 # Make sure we run this in the correct directory
 if [[ ! -f "ko.sh" ]]; then
-  echo "This script must be run in the Kotlin Scripting project directory."
+  echo "This script must be run in the Kotlin Scripting root project directory."
   exit 1
 fi
 
 # Checks whether a command is present on the path, installs otherwise
-# Arguments: name package command
+# Args: name package command
 function install-package {
   if ! hash $3 2>/dev/null; then
     echo "Installing $1"
@@ -29,7 +43,6 @@ if hash brew 2>/dev/null ; then
 fi
 
 # Check that dependencies are installed
-ERROR=
 if ! hash java 2>/dev/null; then
   echo "ERROR: Java is not installed"
   ERROR=1
@@ -46,13 +59,13 @@ if ! hash kscript 2>/dev/null; then
   echo "ERROR: kscript is not installed"
   ERROR=1
 fi
-if [[ $ERROR != "" ]]; then
+if [[ $ERROR -gt 0 ]]; then
   exit $ERROR
 fi
 
 # Create symlink to `ko` script in user bin directory
 if [[ -d "$HOME/bin" ]]; then
-  if [[ ! -e "$HOME/bin/ko" ]] && [[ ! -L "$HOME/bin/ko" ]]; then
+  if [[ ! -e "$HOME/bin/ko" && ! -L "$HOME/bin/ko" ]]; then
     ln -s "$(realpath ko.sh)" "$HOME/bin/ko"
   fi
 fi

@@ -156,6 +156,10 @@ Adding a dependency on the scripting library can be performed by adding the foll
 
 See the [kscript](https://github.com/holgerbrandl/kscript) project for more details.
 
+### Pre-release
+
+The pre-1.0 releases may be subject to API changes. You have been warned!
+
 ## Requirements
 
 - Java 8
@@ -185,13 +189,16 @@ And lots of other things... feedback and contributions are welcome!
 
 ## License
 
-Apache License, Version 2.0
+Copyright (c) 2018 Alphalon, LLC. All rights reserved.
 
-http://www.apache.org/licenses/LICENSE-2.0
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.
+[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
