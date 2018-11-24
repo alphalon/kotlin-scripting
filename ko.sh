@@ -251,6 +251,7 @@ function find-command {
 # Args: script
 function get-dir-from-script {
   local spec=$(sed -n '/^\/\/DIR / s/\/\/DIR //p' "$1")
+  spec=$(echo -e "$spec" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
   if [[ -n $spec ]]; then
     # echo "Found directory specification: $spec"
     if [[ $spec == \$* ]]; then
