@@ -78,5 +78,5 @@ object Framework {
      * The version of the scripting library currently being used. Returns an
      * empty string if the version could not be determined.
      */
-    val libraryVersion: String by lazy { Package.getPackage("io.alphalon.kotlin.scripting").implementationVersion }
+    val libraryVersion: String by lazy { Package.getPackage("io.alphalon.kotlin.scripting").implementationVersion ?: "" }
 }
