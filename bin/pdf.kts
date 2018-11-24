@@ -38,4 +38,4 @@ fun exec(command: List<String>, workingDir: File? = null) =
 fun exec(commandLine: String) = exec(commandLine.split(" "))
 
 // Use pandoc to generate the PDF file
-exec("pandoc -V geometry:margin=1in README.md -o kotlin-scripting.pdf").fail()
+exec("pandoc -V geometry:margin=1in -V fontsize:12pt README.md -o kotlin-scripting.pdf").fail()
