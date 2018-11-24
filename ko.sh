@@ -299,11 +299,11 @@ function create-script {
 
   if [[ ! -e "$script" ]]; then
     # Create new script file
-    if [[ ! -f "$KO_HOME/scripts/ko.template" ]]; then
+    if [[ ! -f "$KO_HOME/scripts/kts.template" ]]; then
       echo "ERROR: unable to locate script template"
       exit 1
     fi
-    cp "$KO_HOME/scripts/ko.template" "$script"
+    cp "$KO_HOME/scripts/kts.template" "$script"
     if [[ -n $KO_PROJECT ]]; then
       sed -i .tmp "s:<project>:$(basename "$KO_PROJECT"):g" "$script"
     fi
