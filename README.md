@@ -17,7 +17,7 @@ The primary purpose of this wrapper script is to locate the Kotlin script to exe
 
 This framework also makes it easy to document and discover the commands that are available for a particular project or context.
 
-This document assumes the existence of a symlink or alias, named `ko`, that references this project's `ko.sh` shell script. See Installation for details.
+This document assumes the existence of a symlink or alias, named `ko`, that references this project's `ko.sh` shell script. (References in this document to the `ko` script actually refer to the `ko.sh` script.)
 
 ### Features
 
@@ -68,7 +68,7 @@ If multiple possible matches are found, no processing will be performed but the 
 ko help
 ```
 
-Lists the available commands based on the working directory. If scripts have been documented with a `//CMD <command> <description>` comment, its description will be displayed alongside the full command name.
+Lists the available commands that can be executed from the current directory. If scripts have been documented with a `//CMD <command> <description>` comment, its description will be displayed alongside the command name.
 
 #### Creating a new script
 
@@ -86,7 +86,7 @@ The new script will be opened in your editor automatically where you can quickly
 ko -e <command>
 ```
 
-This uses the same search resolution as executing a script (partial command matching applies) and opens it using the command line editor specified by either of the `VISUAL` or `EDITOR` environment variables.
+This uses the same search resolution as executing a script (partial command matching applies) and opens the discovered script using the editor specified by either of the `VISUAL` or `EDITOR` environment variables.
 
 Alternatively, `ko --idea <command>` leverages kscript to create a temporary project and edit the file using IntelliJ IDEA.
 
@@ -112,7 +112,7 @@ Note: This only applies when executing the script with the `ko` script.
 
 The `//CMD` comment is used for documenting the available commands. If not present, the command name is taken from the script name and no description will be shown when the commands are listed.
 
-This comment is required for command resolution in `ko.kts` and `ko.kt` scripts that support executing multiple commands in a single file where the command is passed as the first argument. These special scripts are only searched for in search roots (like the project directory).
+This comment is required for command resolution in `ko.kts` and `ko.kt` scripts that support executing multiple commands in a single file where the command is passed as the first argument. These special scripts are only searched for in search root directories (like the project directory).
 
 ### Configuration
 
