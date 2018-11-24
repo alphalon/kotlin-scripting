@@ -5,7 +5,7 @@ This project consists of a framework and a library, which can be used together o
 This Kotlin Scripting project builds on the excellent kscript command line tool hosted on [Github](https://github.com/holgerbrandl/kscript). See the kscript project for details on writing Kotlin scripts with just some of these advantages:
 
 - Maven-style dependency management
-- Cached compilation of scripts for faster subsequent execution
+- Automatic compilation of scripts
 - File includes for sharing non-deployed code among scripts
 - Specification of JVM command line arguments
 
@@ -17,22 +17,26 @@ The primary purpose of this wrapper script is to locate the Kotlin script to exe
 
 This framework also makes it easy to document and discover the commands that are available for a particular project or context.
 
-This document assumes the existence of a symlink or alias, named `ko`, references this project's `ko.sh` shell script. See Installation for details.
+This document assumes the existence of a symlink or alias, named `ko`, that references this project's `ko.sh` shell script. See Installation for details.
 
 ### Features
 
 - Locates and executes an appropriate script for a given command
-- Documents available commands based on the current directory
+- Documents available commands based on the current directory (context)
 - Provides a shortcut to create new or edit existing scripts
 - Runs specific scripts in a designated directory (i.e., the project directory)
 
 ### Concepts
 
-- A _search root_ is a directory identified to possibly "contain" scripts. Examples includes the repository or project root directories, or the user home directory
-- A _search directory_ is a subdirectory from a search root that actually contains the scripts to be executed
+- A _search root_ is a directory identified to provide a context for running scripts. Examples include the repository or project root directories, or even the user's home directory
+- A _search directory_ is a subdirectory within a search root that contains the scripts to execute
 - The _search path_ is a list of directories that are searched in order to match a given command to a script
 
 The search path is determined by constructing search roots based on the current working directory and your project and/or repository structure every time you execute a command using the `ko` script.
+
+The default search roots include the module directory, project directory, repository directory, and home directory, searched in that order. The search dirs within these directories default to `bin` and `scripts`.
+
+In addition, the search path starts with the current directory and ends with the scripts directory located in `KO_HOME`.
 
 ### Usage
 
@@ -44,7 +48,19 @@ Running `ko` without any arguments will print usage information with more option
 ko <command> [args...]
 ``` 
 
-The command is used to identify which script should be called based on the search path. Only the beginning part of the script name needs to be specified, however it much be unambiguous.
+The command is used to identify which script should be called based on the search path. Only the beginning part of the script name needs to be specified, however it much be unambiguous in order for the script to be executed.
+
+What you enter for the command is matched against the beginning of all available commands (case-insensitive).
+
+Successful selection (for execution, editing, etc) requires:
+
+- An exact match
+- A single partial match
+- Multiple partial matches to identical commands
+
+In the case of successfully matching against multiple scripts (or implementations of the same command), the first one on the search path is chosen.
+
+If multiple possible matches are found, no processing will be performed but the matching commands are displayed to enable the user to disambiguate between them easily. (There will also be a non-zero exit code to detect this situation from other shell scripts.)
 
 #### Listing available commands
 
@@ -52,7 +68,7 @@ The command is used to identify which script should be called based on the searc
 ko help
 ```
 
-Lists the available commands based on the working directory. If scripts have been documented with a `//CMD <command> <description>` comment, the description will be displayed alongside the command.
+Lists the available commands based on the working directory. If scripts have been documented with a `//CMD <command> <description>` comment, its description will be displayed alongside the full command name.
 
 #### Creating a new script
 
@@ -60,7 +76,7 @@ Lists the available commands based on the working directory. If scripts have bee
 ko -c <command>
 ```
 
-A new script will be created with the case-sensitive name <command>.kts, so it's important to provide the full command name. The directory where the script is created will be the first directory (excluding the current directory) of the search path. If the search path is empty, the current directory will be used.
+A new script will be created with the case-sensitive name `<command>.kts`, so it's important to provide the full command name. The directory where the script is created will be the first directory (excluding the current directory) of the search path. If the search path is empty, the current directory will be used.
 
 The new script will be opened in your editor automatically where you can quickly delete the parts of the template that you don't need or want.
 
@@ -72,7 +88,7 @@ ko -e <command>
 
 This uses the same search resolution as executing a script (partial command matching applies) and opens it using the command line editor specified by either of the `VISUAL` or `EDITOR` environment variables.
 
-Alternatively, `ko -i <command>` leverages kscript to create a temporary project and edit the file using IntelliJ IDEA.
+Alternatively, `ko --idea <command>` leverages kscript to create a temporary project and edit the file using IntelliJ IDEA.
 
 ### Script conventions
 
@@ -82,11 +98,13 @@ The framework defines two special comments that can be placed in your Kotlin scr
 //DIR <dir-spec>
 ```
 
-The DIR comments specifies in which directory the script should be executed. If not present, scripts will be executed in the current directory.
+The DIR comment specifies in which directory the script should be executed. If not present, scripts will be executed in the working directory.
 
 The _dir-spec_ supports an absolute path, a path relative to the home directory using the tilde notation, and variable substitution to an absolute path.
 
-For example, to always a particular script run in the project directory, add the `//DIR $KO_PROJECT` comment to your file. 
+For example, to always a particular script run in the project directory, add the `//DIR $KO_PROJECT` comment to your file.
+
+Note: This only applies when executing the script with the `ko` script.
 
 ```kotlin
 //CMD <command> <multi-word description>
@@ -94,17 +112,19 @@ For example, to always a particular script run in the project directory, add the
 
 The `//CMD` comment is used for documenting the available commands. If not present, the command name is taken from the script name and no description will be shown when the commands are listed.
 
-This comment is required for command resolution in `ko.kts` and `ko.kt` scripts that support executing multiple commands in a single file where the first argument is the command. These special scripts are only searched for in search roots (like the project directory).
+This comment is required for command resolution in `ko.kts` and `ko.kt` scripts that support executing multiple commands in a single file where the command is passed as the first argument. These special scripts are only searched for in search roots (like the project directory).
 
 ### Configuration
 
 Several environment variables can be set to modify the behavior of the run script:
 
-- `KO_ADDITIONAL_SEARCH_ROOTS` - color-separated list of search root directories
-- `KO_ADDITIONAL_SEARCH_DIRS` - colon-separated list of subdirectories below search roots to find scripts
+- `KO_ADDITIONAL_SEARCH_ROOTS` - list of search root directories
+- `KO_ADDITIONAL_SEARCH_DIRS` - list of subdirectories below search roots to find scripts
 - `KO_ADDITIONAL_REPO_MARKERS` - additional markers used to locate the repository directory
 - `KO_ADDITIONAL_PROJECT_MARKERS` - additional markers used to locate project directories
 - `KO_ADDITIONAL_MODULE_MARKERS` - additional markers used to local modules within a project
+
+All of these configuration settings use colons (:) as a value delimiter.
 
 #### Special marker files
 
@@ -128,10 +148,10 @@ These environment variables are available to your Kotlin script when called via 
 
 NOTE: The scripting library has not yet been developed, so the functionality is severely limited at this early stage.
 
-Adding a dependency on the scripting library can be performed by adding the following to your script file:
+Adding a dependency on the scripting library can be performed by adding the following preamble to your script file (using the appropriate version, of course):
 
 ```kotlin
-@file:DependsOn("io.alphalon.kotlin:kotlin-scripting:0.1-SNAPSHOT")
+@file:DependsOn("io.alphalon.kotlin:kotlin-scripting:0.1")
 ```
 
 See the [kscript](https://github.com/holgerbrandl/kscript) project for more details.
@@ -143,7 +163,7 @@ See the [kscript](https://github.com/holgerbrandl/kscript) project for more deta
 - Maven 3.6
 - kscript 2.6
 
-(It looks like an upcoming version of kscript will not require Maven.)
+(It looks like an upcoming version of kscript will no longer require Maven.)
 
 ## Installation
 
@@ -165,15 +185,9 @@ And lots of other things... feedback and contributions are welcome!
 
 ## License
 
-Licensed to the Apache Software Foundation (ASF) under one
-or more contributor license agreements.  See the NOTICE file
-distributed with this work for additional information
-regarding copyright ownership.  The ASF licenses this file
-to you under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License.  You may obtain a copy of the License at
+Apache License, Version 2.0
 
-  http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing,
 software distributed under the License is distributed on an
