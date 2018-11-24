@@ -178,6 +178,8 @@ It is intended for this library to include support for the most commonly used fe
 - Asynchronous HTTP client (based on ktor)
 - Equivalents for tools such as find, grep, sed, awk, etc
 
+Another goal of this library is to help reduce the number of dependencies and imports each script needs to maintain, lowering the overall ceremony involved when writing scripts.
+
 ## Requirements
 
 - Java 8
