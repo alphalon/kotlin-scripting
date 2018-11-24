@@ -7,29 +7,51 @@
 //CMD  pdf Generates a PDF from the project README.md file
 
 import java.io.File
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 /**
  * Executes the [block] on a non-zero exit code and terminates the process.
  */
-fun Process.fail(block: (() -> Unit)? = null) {
-    if (exitValue() > 0) {
-        block?.invoke()
-        System.exit(exitValue())
+fun Process?.fail(block: (() -> Unit)? = null) {
+    try {
+        when {
+            this == null -> System.exit(1)
+            exitValue() > 0 -> {
+                block?.invoke()
+                System.exit(exitValue())
+            }
+        }
+    } catch (e: IllegalThreadStateException) {
+        println("ERROR: the process has not terminated")
+        System.exit(1)
     }
 }
 
 /**
  * Executes the [command], waiting for the process to finish.
  */
-fun exec(command: List<String>, workingDir: File? = null): Process =
-    ProcessBuilder(command).apply {
+fun exec(command: List<String>, workingDir: File? = null, waitForMinutes: Long = 60): Process? {
+    val builder = ProcessBuilder(command).apply {
         workingDir?.let { directory(it) }
         redirectOutput(ProcessBuilder.Redirect.INHERIT)
         redirectError(ProcessBuilder.Redirect.INHERIT)
-    }.start().apply {
-        waitFor(5, TimeUnit.MINUTES)
     }
+
+    try {
+        return builder.start().apply {
+            try {
+                waitFor(waitForMinutes, TimeUnit.MINUTES)
+            } catch (e: InterruptedException) {
+                println("WARNING: the process (${command.first()}) is taking longer than $waitForMinutes minutes")
+            }
+        }
+    } catch (e: IOException) {
+        println("ERROR: ${e.message}")
+    }
+
+    return null
+}
 
 /**
  * Executes the [commandLine], performing a terribly naive parsing operation
