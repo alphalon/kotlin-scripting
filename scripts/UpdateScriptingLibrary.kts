@@ -18,7 +18,7 @@
  */
 
 //CMD  UpdateScriptingLibrary Changes Scripting Library dependency version
-//
+
 //DEPS io.alphalon.kotlin:kotlin-scripting:0.1-SNAPSHOT
 
 println("The latest version of the Scripting Library is ${System.getenv("KO_VERSION") ?: "unknown"}")
