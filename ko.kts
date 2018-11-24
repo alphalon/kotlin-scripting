@@ -12,4 +12,4 @@
 //CMD * Matches any otherwise unmatched command
 
 println("ko args: ${args.joinToString(separator = " ")}")
-println("Run in ${System.getenv("user.dir")}")
+println("Run in ${System.getProperty("user.dir")}")

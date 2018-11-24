@@ -25,6 +25,9 @@
 # https://askubuntu.com/questions/68175/how-to-create-script-with-auto-complete
 # symlink to /usr/local/etc/bash_completion.d
 
+# NOTE: Reserve options for -r, -p, and -m. These may be used for scoping
+# operations to the repository, project, or module in the future.
+
 if [[ -z $1 ]]; then
   echo "Usage:"
   echo "  ko [options...] <command> [args...]"
@@ -34,12 +37,13 @@ if [[ -z $1 ]]; then
   echo "are mutually exclusive."
   echo
   echo "Options:"
-  echo "  -c,--create     Creates and edits a new script named <command>.kts"
-  echo "  -e,--edit       Edits the existing script for <command>"
-  echo "  -f,--file       Prints the filename of the matching script"
-  echo "  -d,--dir        Prints the directory containing the matching script"
-  echo "  -v,--version    Prints the version"
-  echo "  --verbose       Prints information about the process"
+  echo "  -c,--create       Creates and edits a new script named <command>.kts"
+  echo "  -e,--edit         Edits the existing script for <command>"
+  echo "  -s,--search-path  Prints the search path for the current directory"
+  echo "  -f,--file         Prints the filename of the matching script"
+  echo "  -d,--dir          Prints the directory containing the matching script"
+  echo "  -v,--version      Prints the version"
+  echo "  --verbose         Prints information about the process"
   echo
   exit 0
 fi
@@ -50,6 +54,7 @@ while [[ -n $1 && $1 == -* ]]; do
   "-c" | "--create") CREATE_SCRIPT=1; shift;;
   "-e" | "--edit") EDIT_SCRIPT=1; shift;;
   "-i" | "--idea") IDEA_SCRIPT=1; shift;;
+  "-s" | "--search-path") PRINT_SEARCH=1; shift;;
   "-f" | "--file") PRINT_FILE=1; shift;;
   "-d" | "--dir") PRINT_DIR=1; shift;;
   "-v" | "--version") PRINT_VERSION=1; shift;;
@@ -73,7 +78,7 @@ if [[ -f "$KO_HOME/scripts/ko-framework-version.sh" ]]; then
   source "$KO_HOME/scripts/ko-framework-version.sh"
 fi
 if [[ -n $PRINT_VERSION ]]; then
-  echo "ko $KO_VERSION"
+  echo "$KO_VERSION"
   exit 0
 fi
 
@@ -214,7 +219,8 @@ function make-search-path {
       local dir="$r/$p"
       if [[ -d $dir ]]; then
         # echo "Adding $dir to search path"
-        sp+=("$r/$p")
+        sp+=("$dir")
+        if [[ -f "$dir/ko.kts" ]]; then sp+=("$dir/ko.kts"); fi
       fi
     done
   done
@@ -233,16 +239,29 @@ function find-script {
     # echo "Searching $2 for scripts matching $1"
     files=($(find "$2/" -iname "$1*.kts" -maxdepth 1 -type f))
     for f in "${files[@]}"; do
-      SCRIPTS+=("$(echo $f | sed 's,//,/,g')")
+      local path=$(echo $f | sed 's,//,/,g')
+      local filename=$(basename "$f")
+      local name="${filename%.*}"
+      SCRIPTS+=("$name:$path")
     done
   fi
 }
 
-# Adds matches if the script contains
+# Adds matches if the script contains a //CMD matching the specified command
 # Args: command script
 function find-command {
   # echo "Searching $2 for commands matching $1"
-  :
+  local cmds=($(sed -n '/^\/\/CMD / s/\/\/CMD //p' "$2" | awk '{print $1;}'))
+  # echo "Found: ${cmds[@]}"
+
+  shopt -s nocasematch
+  for cmd in "${cmds[@]}"; do
+    if [[ $cmd == $1* ]]; then
+      # echo "Matched command $cmd in script $2"
+      SCRIPTS+=("$cmd:$2")
+    fi
+  done
+  shopt -u nocasematch
 }
 
 # Checks the contents of the script for a run directory spec
@@ -308,7 +327,9 @@ function create-script {
       sed -i .tmp "s:<project>:$(basename "$KO_PROJECT"):g" "$script"
     fi
     sed -i .tmp "s:<file>:$(basename "$script"):g" "$script"
-    sed -i .tmp "s/<command>/$COMMAND/g" "$script"
+    if [[ $COMMAND != "ko" ]]; then
+      sed -i .tmp "s/<command>/$COMMAND/g" "$script"
+    fi
     if [[ -n $KO_VERSION ]]; then
       sed -i .tmp "s/<version>/$KO_VERSION/g" "$script"
     fi
@@ -359,6 +380,11 @@ if [[ -z $KO_SEARCH_PATH ]]; then
   make-search-path
 fi
 
+if [[ $PRINT_SEARCH -gt 0 ]]; then
+  echo "$KO_SEARCH_PATH"
+  exit 0
+fi
+
 if [[ $VERBOSE -gt 0 ]]; then
   echo "Repository:     $KO_REPO"
   echo "Project:        $KO_PROJECT"
@@ -403,10 +429,13 @@ if [[ ${#SCRIPTS[@]} -gt 1 ]]; then
   done
   exit 1
 fi
-export KO_SCRIPT="${SCRIPTS[0]}"
+IFS=':' read -ra PARSED <<< "${SCRIPTS[0]}"
+export KO_COMMAND="${PARSED[0]}"
+export KO_SCRIPT="${PARSED[1]}"
 export KO_SCRIPT_DIR="$(basename "$KO_SCRIPT")"
 
 if [[ $VERBOSE -gt 0 ]]; then
+  echo "Command:        $KO_COMMAND"
   echo "Script:         $KO_SCRIPT"
 fi
 
@@ -418,9 +447,8 @@ if [[ -z $KO_DIR ]]; then
 fi
 
 # Pass command as first argument to ko.kts scripts
-if [[ $KO_SCRIPT == "ko.kts" ]]; then
-  # TODO: Expand command to what the script expects
-  set -- "$COMMAND" "${@:2}"
+if [[ $(basename "$KO_SCRIPT") == "ko.kts" ]]; then
+  set -- "$KO_COMMAND" "${@:2}"
 else
   shift
 fi
@@ -428,7 +456,7 @@ fi
 if [[ $VERBOSE -gt 0 ]]; then
   echo "Run dir:        $KO_DIR"
   if [[ "${#@}" -gt 0 ]]; then
-    echo "Arguments:      $@"
+    echo "Script args:    $@"
   fi
   echo
 fi

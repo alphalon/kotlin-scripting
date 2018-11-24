@@ -1,4 +1,4 @@
-# Kotlin Scripting
+# KO - Kotlin Scripting
 
 This project consists of a framework and a library, which can be used together or independently of each other. The framework provides support for running your scripts from the command line while the library provides APIs called from within your Kotlin scripts.
 
@@ -120,7 +120,7 @@ Note: This only applies when executing the script with the `ko` script.
 
 The `//CMD` comment is used for documenting the available commands. If not present, the command name is taken from the script name and no description will be shown when the commands are listed.
 
-This comment is required for command resolution in `ko.kts` scripts that support executing multiple commands in a single file where the command is passed as the first argument. These special scripts are only searched for in search root directories (like the project directory).
+This comment is required for command resolution in `ko.kts` scripts, which support executing multiple commands as the command is passed as the first argument. These special scripts can also be located in search root directories.
 
 ### Configuration
 
@@ -144,6 +144,7 @@ These environment variables are available to your Kotlin script when called via 
 
 - `KO_HOME` - the directory of the `ko` script
 - `KO_VERSION` - the version of the `ko` script
+- `KO_COMMAND` - the resolved command name
 - `KO_SCRIPT` - the filename of the script being executed
 - `KO_SCRIPT_DIR` - the directory of the script file being executed
 - `KO_SEARCH_PATH` - the list of files and directories used to search for scripts
