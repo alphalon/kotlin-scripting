@@ -1,10 +1,10 @@
 /*
  * Project: kotlin-scripting
- * Script:  GeneratePdf.kts
+ * Script:  pdf.kts
  */
 
 //DIR  $KO_PROJECT
-//CMD  GeneratePdf Generates a PDF from the project README.md file
+//CMD  pdf Generates a PDF from the project README.md file
 
 import java.io.File
 import java.util.concurrent.TimeUnit
