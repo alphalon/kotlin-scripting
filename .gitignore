@@ -8,5 +8,4 @@ build
 out
 
 # Project
-/scripts/ko-framework-version.sh
 /*.pdf
