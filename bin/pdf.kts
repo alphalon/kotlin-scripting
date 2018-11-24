@@ -22,7 +22,7 @@ fun Process.fail(block: (() -> Unit)? = null) {
 /**
  * Executes the [command], waiting for the process to finish.
  */
-fun exec(command: List<String>, workingDir: File? = null) =
+fun exec(command: List<String>, workingDir: File? = null): Process =
     ProcessBuilder(command).apply {
         workingDir?.let { directory(it) }
         redirectOutput(ProcessBuilder.Redirect.INHERIT)
