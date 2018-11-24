@@ -17,10 +17,8 @@
  * limitations under the License.
  */
 
-//CMD UpdateScriptingLibrary Changes Scripting Library dependency version
+//CMD  UpdateScriptingLibrary Changes Scripting Library dependency version
+//
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1-SNAPSHOT
 
-@file:DependsOn("io.alphalon.kotlin:kotlin-scripting:0.1-SNAPSHOT")
-
-import io.alphalon.kotlin.scripting.Framework
-
-println("The latest version of the Scripting Library is ${System.getenv("KO_VERSION") ?: Framework.libraryVersion}")
+println("The latest version of the Scripting Library is ${System.getenv("KO_VERSION") ?: "unknown"}")

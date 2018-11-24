@@ -1,9 +1,10 @@
-// Script: <file>
+// Project: <project>
+// Script:  <file>
 //
-//DIR $PWD
-//CMD <command> <Enter short description here>
-
-@file:DependsOn("io.alphalon.kotlin:kotlin-scripting:<version>")
+//DIR  $PWD
+//CMD  <command> <Enter short description here>
+//
+//DEPS io.alphalon.kotlin:kotlin-scripting:<version>
 
 import io.alphalon.kotlin.scripting.*
 

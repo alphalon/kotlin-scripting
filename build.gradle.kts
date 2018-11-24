@@ -35,7 +35,6 @@ dependencies {
     // implementation(kotlin("script-util"))
 
     testCompile(kotlin("test-junit5"))
-    testImplementation("com.github.holgerbrandl:kscript-annotations:1.2")
 }
 
 val jar by tasks.getting(Jar::class) {

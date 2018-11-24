@@ -305,6 +305,9 @@ function create-script {
       exit 1
     fi
     cp "$KO_HOME/scripts/ko.template" "$script"
+    if [[ -n $KO_PROJECT ]]; then
+      sed -i .tmp "s:<project>:$(basename "$KO_PROJECT"):g" "$script"
+    fi
     sed -i .tmp "s:<file>:$(basename "$script"):g" "$script"
     sed -i .tmp "s/<command>/$COMMAND/g" "$script"
     if [[ -n $KO_VERSION ]]; then
