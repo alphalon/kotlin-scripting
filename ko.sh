@@ -208,10 +208,8 @@ function make-search-path {
   IFS=':' read -ra sr <<< "$KO_SEARCH_ROOTS"
   local sp=("$PWD")
   if [[ -f "$PWD/ko.kts" ]]; then sp+=("$PWD/ko.kts"); fi
-  if [[ -f "$PWD/ko.kt" ]]; then sp+=("$PWD/ko.kt"); fi
   for r in "${sr[@]}"; do
     if [[ -f "$r/ko.kts" ]]; then sp+=("$r/ko.kts"); fi
-    if [[ -f "$r/ko.kt" ]]; then sp+=("$r/ko.kt"); fi
     for p in "${SEARCH_DIRS[@]}"; do
       local dir="$r/$p"
       if [[ -d $dir ]]; then
@@ -233,7 +231,7 @@ function make-search-path {
 function find-script {
   if [[ -d $2 ]]; then
     # echo "Searching $2 for scripts matching $1"
-    files=($(find "$2/" \( -iname "$1*.kts" -o -iname "$1*.kt" \) -maxdepth 1 -type f))
+    files=($(find "$2/" -iname "$1*.kts" -maxdepth 1 -type f))
     for f in "${files[@]}"; do
       SCRIPTS+=("$(echo $f | sed 's,//,/,g')")
     done
@@ -419,8 +417,8 @@ if [[ -z $KO_DIR ]]; then
   KO_DIR="$PWD"
 fi
 
-# Pass command as first argument to ko.kt{s} scripts
-if [[ $KO_SCRIPT == "ko.kts" || $KO_SCRIPT == "ko.kt" ]]; then
+# Pass command as first argument to ko.kts scripts
+if [[ $KO_SCRIPT == "ko.kts" ]]; then
   # TODO: Expand command to what the script expects
   set -- "$COMMAND" "${@:2}"
 else

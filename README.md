@@ -9,15 +9,15 @@ This Kotlin Scripting project builds on the excellent kscript command line tool 
 - File includes for sharing non-deployed code among scripts
 - Specification of JVM command line arguments
 
-This project has been designed to make using kscript easier without limiting the power or flexibility it provides. For example, scripts can still be run directly from the command lime (using shebang syntax) and still utilize this scripting library.
+This project has been designed to make using kscript easier without limiting the features or flexibility it provides. For example, scripts can still be run directly from the command lime while utilizing this scripting library.
 
 ## Scripting Framework
 
-The primary purpose of this wrapper script is to locate the Kotlin script to execute. The first argument specifies the command to execute which is matched against the Kotlin script filenames from multiple directories through a search path to well-known locations within a repository, project, or home directory.
+The primary purpose of this framework is to provide a wrapper script, named `ko.sh`, that locates and executes Kotlin scripts. The first argument, which specifies the command or script to execute, is matched against the Kotlin scripts from multiple directories through a search path to well-known locations within a repository, project, or home directory.
 
-This framework also makes it easy to document and discover the commands that are available for a particular project or context.
+This framework also makes it easy to document and discover the commands that are available for a particular context determined by the current directory.
 
-This document assumes the existence of a symlink or alias, named `ko`, that references this project's `ko.sh` shell script. (References in this document to the `ko` script actually refer to the `ko.sh` script.)
+This document assumes the existence of a symlink or alias, named `ko`, that references this project's `ko.sh` shell script, and this will be used throughout this document.
 
 ### Features
 
@@ -36,7 +36,15 @@ The search path is determined by constructing search roots based on the current 
 
 The default search roots include the module directory, project directory, repository directory, and home directory, searched in that order. The search dirs within these directories default to `bin` and `scripts`.
 
-In addition, the search path starts with the current directory and ends with the scripts directory located in `KO_HOME`.
+In addition, the search path starts with the current directory and ends with the `scripts` located alongside the `ko` script.
+
+### Script files
+
+While kscript supports executing `.kt` files, this framework only calls scripts with the `.kts` extension. This allows for a clean separation of files intended to be invoked directly and those that implement shared functionality and can be included in other scripts using:
+
+```kotlin
+//INCLUDE util.kt
+```
 
 ### Usage
 
@@ -48,7 +56,7 @@ Running `ko` without any arguments will print usage information with more option
 ko <command> [args...]
 ``` 
 
-The command is used to identify which script should be called based on the search path. Only the beginning part of the script name needs to be specified, however it much be unambiguous in order for the script to be executed.
+The command is used to identify which `.kts` script should be called based on the search path. Only the beginning part of the script name needs to be specified, however it much be unambiguous in order for the script to be executed.
 
 What you enter for the command is matched against the beginning of all available commands (case-insensitive).
 
@@ -112,11 +120,11 @@ Note: This only applies when executing the script with the `ko` script.
 
 The `//CMD` comment is used for documenting the available commands. If not present, the command name is taken from the script name and no description will be shown when the commands are listed.
 
-This comment is required for command resolution in `ko.kts` and `ko.kt` scripts that support executing multiple commands in a single file where the command is passed as the first argument. These special scripts are only searched for in search root directories (like the project directory).
+This comment is required for command resolution in `ko.kts` scripts that support executing multiple commands in a single file where the command is passed as the first argument. These special scripts are only searched for in search root directories (like the project directory).
 
 ### Configuration
 
-Several environment variables can be set to modify the behavior of the run script:
+Several environment variables can be set to configure the behavior of the run script:
 
 - `KO_ADDITIONAL_SEARCH_ROOTS` - list of search root directories
 - `KO_ADDITIONAL_SEARCH_DIRS` - list of subdirectories below search roots to find scripts
@@ -124,7 +132,7 @@ Several environment variables can be set to modify the behavior of the run scrip
 - `KO_ADDITIONAL_PROJECT_MARKERS` - additional markers used to locate project directories
 - `KO_ADDITIONAL_MODULE_MARKERS` - additional markers used to local modules within a project
 
-All of these configuration settings use colons (:) as a value delimiter.
+All of these settings are multi-valued and use colons (:) as the delimiter.
 
 #### Special marker files
 
@@ -151,7 +159,7 @@ NOTE: The scripting library has not yet been developed, so the functionality is 
 Adding a dependency on the scripting library can be performed by adding the following preamble to your script file (using the appropriate version, of course):
 
 ```kotlin
-@file:DependsOn("io.alphalon.kotlin:kotlin-scripting:0.1")
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1
 ```
 
 See the [kscript](https://github.com/holgerbrandl/kscript) project for more details.
@@ -159,6 +167,16 @@ See the [kscript](https://github.com/holgerbrandl/kscript) project for more deta
 ### Pre-release
 
 The pre-1.0 releases may be subject to API changes. You have been warned!
+
+It is likely this library will grow organically while a style for writing Kotlin scripts is being established and existing shell scripts are converted over.
+
+It is intended for this library to include support for the most commonly used features, such as:
+
+- Command line argument parsing (geared toward self documentation)
+- Kotlin-idiomatic way for calling other programs or build scripts
+- Parsing and manipulation of JSON and XML documents
+- Asynchronous HTTP client (based on ktor)
+- Equivalents for tools such as find, grep, sed, awk, etc
 
 ## Requirements
 
