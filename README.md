@@ -78,6 +78,14 @@ ko help
 
 Lists the available commands that can be executed from the current directory. If scripts have been documented with a `//CMD <command> <description>` comment, its description will be displayed alongside the command name.
 
+Run the `ko help --help` command for information about additional options for the help command.
+
+```bash
+ko help <command>
+```
+
+Detailed information will be output to the console when a command is matched against a script. Scripts that support the `--help` argument will output additional information.
+
 #### Creating a new script
 
 ```bash
