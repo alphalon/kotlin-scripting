@@ -30,6 +30,7 @@ if (Framework.script == null) {
     exit(1)
 }
 
+// Process arguments
 fun List<String>.hasFlag(vararg options: String) = intersect(options.toList()).isNotEmpty()
 val options = args.filter { it.startsWith("-") }.map(String::toLowerCase)
 val arguments = args.filter { !it.startsWith("-") }
@@ -41,18 +42,24 @@ val filterRepo = options.hasFlag("-r", "--repo")
 val filterProject = options.hasFlag("-p", "--project")
 val filterModule = options.hasFlag("-m", "--module")
 
+// Print usage and exit
 if (printHelp) {
-    echo("Usage:")
-    echo("  help [options...] [command]")
-    echo()
-    echo("Prints a list of available commands or detailed information about a specific command.")
-    echo()
-    echo("Options:")
-    echo("  -f, --find       Prints the path of the script associated with the commands")
-    echo("  -v, --verbose    Prints the discovered directories")
-    echo("  -r, --repo       Limits the output to the repository")
-    echo("  -p, --project    Limits the output to the project")
-    echo("  -m, --module     Limits the output to the module")
+    val usage = """
+        Usage:
+          help [options...] [command]
+
+        Prints a list of available commands or detailed information about a specific
+        command.
+
+        Options:
+          -f, --find       Prints the path of the script associated with the commands
+          -v, --verbose    Prints the discovered directories
+          -r, --repo       Limits the output to the repository
+          -p, --project    Limits the output to the project
+          -m, --module     Limits the output to the module
+    """.trimIndent()
+
+    echo(usage)
     exit()
 }
 
@@ -77,22 +84,26 @@ if (printDirectories) {
 
 echoSeparator()
 if (arguments.isNotEmpty()) {
+    // Output information for a single command
     val name = arguments.first()
-    val command = searchForCommand(name, top)
 
+    val command = searchForCommand(name, top)
     if (command != null) {
-        echo("Script: ${command.script}")
-        echo()
+        addTableRow("Command:", command.name)
+        addTableRow("Script:", command.script.absolutePath)
+        echoTable()
+        echoSeparator()
 
         if (commandProvidesHelp(command))
             runScript(command, listOf("--help"))
         else
-            echo("${command.name} - ${command.description}")
+            echo(command.description)
     } else {
-        echo("ERROR: could not find help for a command matching '$name'")
+        echo("Could not find help for a command matching '$name'")
         exit(1)
     }
 } else {
+    // List available commands
     val commands = availableCommands(top)
     if (commands.isNotEmpty()) {
         echo("Available commands:")
