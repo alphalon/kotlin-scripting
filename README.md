@@ -60,10 +60,10 @@ The command is used to identify which `.kts` script should be called based on th
 
 What you enter for the command is matched against the beginning of all available commands (case-insensitive).
 
-Successful selection (for execution, editing, etc) requires:
+Successful selection (for execution, editing, etc) requires one of the following:
 
-- An exact match
-- A single partial match
+- A single match
+- An exact match (shadows other matches)
 - Multiple partial matches to identical commands
 
 In the case of successfully matching against multiple scripts (or implementations of the same command), the first one on the search path is chosen.
@@ -121,6 +121,8 @@ Note: This only applies when executing the script with the `ko` script.
 The `//CMD` comment is used for documenting the available commands. If not present, the command name is taken from the script name and no description will be shown when the commands are listed.
 
 This comment is required for command resolution in `ko.kts` scripts, which support executing multiple commands as the command is passed as the first argument. These special scripts can also be located in search root directories.
+
+The presence of a `//HELP` comment indicates the script supports being called with the `--help` argument to output usage information to the console. 
 
 ### Configuration
 

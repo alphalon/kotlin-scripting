@@ -73,3 +73,11 @@ fun exec(command: List<String>, workingDir: File? = null, waitForMinutes: Long =
  * to separate the arguments to pass to the process. Use at your own risk!
  */
 fun exec(commandLine: String) = exec(commandLine.split(" "))
+
+/**
+ * Immediately exits the script with the [exitCode].
+ */
+fun exit(exitCode: Int = 0): Nothing {
+    System.exit(exitCode)
+    throw RuntimeException("This will never get called")
+}

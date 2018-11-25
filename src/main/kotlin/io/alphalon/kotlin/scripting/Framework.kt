@@ -78,5 +78,105 @@ object Framework {
      * The version of the scripting library currently being used. Returns an
      * empty string if the version could not be determined.
      */
-    val libraryVersion: String by lazy { Package.getPackage("io.alphalon.kotlin.scripting").implementationVersion ?: "" }
+    val libraryVersion: String by lazy {
+        Package.getPackage("io.alphalon.kotlin.scripting").implementationVersion ?: ""
+    }
+}
+
+data class Command(val name: String, val description: String, val script: File)
+
+/**
+ * Returns the commands listed in a script [file].
+ */
+fun commandsInFile(file: File): List<Command> =
+    file.bufferedReader().useLines { lines ->
+        val regex = Regex("""^\s*//CMD\s*([-\w]*)\s*-?\s*(.*)""")
+        lines.mapNotNull { line ->
+            val groups = regex.find(line)?.groups
+            val name = groups?.get(1)?.value
+            name?.let { Command(it, groups[2]?.value ?: "", file) }
+        }.toList()
+    }
+
+/**
+ * Returns the commands stored in the [directory].
+ */
+fun commandsInDirectory(directory: File): List<Command> = directory
+    .listFiles { _, name -> name.endsWith(".kts") }
+    ?.filter { it.name != "ko.kts" }
+    ?.map { file ->
+        val scriptName = file.name.removeSuffix(".kts")
+        commandsInFile(file)
+            .filter { it.name.equals(scriptName, ignoreCase = true) }
+            .map { Command(it.name, it.description, file) }
+            .firstOrNull() ?: Command(scriptName, "", file)
+    } ?: listOf()
+
+/**
+ * Returns a list of available commands based on the [search path][Framework.searchPath].
+ * The list may be empty if the search path could not be determined or no
+ * scripts could be found.
+ *
+ * If supplied, the commands must reside within the [ancestor] directory or any
+ * of its descendants.
+ */
+fun availableCommands(ancestor: File? = null): List<Command> =
+    Framework.searchPath?.let { path ->
+        path.drop(1)
+            .flatMap { file ->
+                when {
+                    file.isDirectory -> commandsInDirectory(file)
+                    file.isFile -> commandsInFile(file)
+                    else -> listOf()
+                }
+            }
+            .filter { ancestor == null || it.script.isDescendant(ancestor) }
+            .sortedBy { it.name.toLowerCase() }
+    } ?: listOf()
+
+/**
+ * Returns whether the specified [command] supports the --help option to print
+ * usage information.
+ */
+fun commandProvidesHelp(command: Command): Boolean =
+    command.script.bufferedReader().useLines { lines ->
+        val regex = Regex("""^\s*//HELP.*$""")
+        lines.any { regex.matches(it) }
+    }
+
+/**
+ * Returns the first command that matches the [name]. If an [ancestor] directory
+ * is provided, the search will be limited to its descendants.
+ */
+fun searchForCommand(name: String, ancestor: File? = null): Command? {
+    val commands = availableCommands(ancestor).filter { it.name.startsWith(name, ignoreCase = true) }
+    if (commands.isEmpty())
+        return null
+
+    // Return a single match
+    if (commands.count() == 1)
+        return commands.first()
+
+    // Return the first exact match
+    val exactMatches = commands.filter { it.name.equals(name, ignoreCase = true) }
+    if (exactMatches.isNotEmpty())
+        return exactMatches.first()
+
+    // Return partial match if they all match to the same command
+    val commandName = commands.first().name
+    commands.drop(1).forEach {
+        if (it.name != commandName)
+            return null
+    }
+
+    return commands.firstOrNull()
+}
+
+/**
+ * Runs the script represented by the [command] in an external process,
+ * returning its exit code.
+ */
+fun runScript(command: Command, args: List<String> = listOf()): Int {
+    val cmd = listOf("ko", command.name) + args
+    return exec(cmd)?.exitValue() ?: 1
 }

@@ -3,8 +3,8 @@
  * Script:  <file>
  */
 
-//DIR  $PWD
-//CMD  <command> Enter short description here
+//DIR $PWD
+//CMD <command> - Enter short description here
 
 //DEPS io.alphalon.kotlin:kotlin-scripting:<version>
 

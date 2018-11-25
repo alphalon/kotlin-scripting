@@ -28,7 +28,7 @@
 # NOTE: Reserve options for -r, -p, and -m. These may be used for scoping
 # operations to the repository, project, or module in the future.
 
-if [[ -z $1 ]]; then
+if [[ -z $1 || $1 == "-h" || $1 == "--help" ]]; then
   echo "Usage:"
   echo "  ko [options...] <command> [args...]"
   echo
@@ -37,13 +37,13 @@ if [[ -z $1 ]]; then
   echo "options are mutually exclusive."
   echo
   echo "Options:"
-  echo "  -c,--create       Creates and edits a new script named <command>.kts"
-  echo "  -e,--edit         Edits the existing script matching <command>"
-  echo "  -s,--search-path  Prints the search path for the current directory"
-  echo "  -f,--file         Prints the filename of the matching script"
-  echo "  -d,--dir          Prints the directory containing the matching script"
-  echo "  -v,--version      Prints the version"
-  echo "  --verbose         Prints information about the process"
+  echo "  -c,--create         Creates and edits a new script named <command>.kts"
+  echo "  -e,--edit           Edits the existing script matching <command>"
+  echo "  -s,--search-path    Prints the search path for the current directory"
+  echo "  -f,--file           Prints the filename of the matching script"
+  echo "  -d,--dir            Prints the directory containing the matching script"
+  echo "  -v,--version        Prints the version"
+  echo "  --verbose           Prints information about the process"
   echo
   exit 0
 fi
@@ -180,8 +180,10 @@ function find-module {
     dir=$(dirname "$dir")
   done
 
-  export KO_MODULE="$KO_PROJECT"
-  # echo "Did not find a module, using project"
+  if [[ -n $KO_PROJECT ]]; then
+    # echo "Did not find a module, using project"
+    export KO_MODULE="$KO_PROJECT"
+  fi
 }
 
 # Joins an array of strings using the first arg as a separator
@@ -367,7 +369,8 @@ function create-script {
     fi
     sed -i .tmp "s:<file>:$(basename "$script"):g" "$script"
     if [[ $COMMAND != "ko" ]]; then
-      sed -i .tmp "s/<command>/$COMMAND/g" "$script"
+      local name="$(tr '[:upper:]' '[:lower:]' <<< ${COMMAND:0:1})${COMMAND:1}"
+      sed -i .tmp "s/<command>/$name/g" "$script"
     fi
     if [[ -n $KO_VERSION ]]; then
       sed -i .tmp "s/<version>/$KO_VERSION/g" "$script"
