@@ -12,3 +12,4 @@ import io.alphalon.kotlin.scripting.*
 
 // Use pandoc to generate the PDF file
 exec("pandoc -V geometry:margin=1in -V fontsize:12pt README.md -o kotlin-scripting.pdf").fail()
+exec("update-pdf")
