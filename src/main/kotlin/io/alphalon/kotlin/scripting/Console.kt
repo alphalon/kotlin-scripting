@@ -24,7 +24,7 @@ package io.alphalon.kotlin.scripting
 import kotlin.math.max
 
 private var output = false
-private val capturedColumns: MutableList<List<String>> = mutableListOf()
+private val capturedTable: MutableList<List<String>> = mutableListOf()
 
 /**
  * Outputs a line to the console.
@@ -57,7 +57,7 @@ fun echoSeparator() {
  */
 fun addTableRow(vararg columns: String) {
     if (columns.isNotEmpty()) {
-        capturedColumns.add(columns.toList())
+        capturedTable.add(columns.toList())
     }
 }
 
@@ -67,12 +67,24 @@ fun addTableRow(vararg columns: String) {
  * between the columns.
  */
 fun echoTable(separator: String = "    ") {
-    if (capturedColumns.isNotEmpty()) {
-        val numColumns = capturedColumns.map { it.count() }.max() ?: 0
+    if (capturedTable.isNotEmpty()) {
+        // Determine maximum width for each column
+        val numColumns = capturedTable.map { it.count() }.max() ?: 0
         val widths = Array(numColumns) { 0 }
-        capturedColumns.forEach { it.mapIndexed { i, s -> widths[i] = max(widths[i], s.length) } }
-        val format = (0 until numColumns).map { "%-${widths[it]}s" }.dropLast(1).joinToString(separator) + "$separator%s"
-        capturedColumns.forEach { echo(String.format(format, *it.toTypedArray())) }
-        capturedColumns.clear()
+        capturedTable.forEach {
+            it.mapIndexed { i, s -> widths[i] = max(widths[i], s.length) }
+        }
+
+        // Construct format string
+        val format = (0 until numColumns)
+            .map { "%-${widths[it]}s" }
+            .dropLast(1)
+            .joinToString(separator) + "$separator%s"
+
+        // Output each row
+        capturedTable.forEach {
+            echo(String.format(format, *it.toTypedArray()))
+        }
+        capturedTable.clear()
     }
 }
