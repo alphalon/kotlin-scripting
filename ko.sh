@@ -33,12 +33,12 @@ if [[ -z $1 ]]; then
   echo "  ko [options...] <command> [args...]"
   echo
   echo "The command can be an abbreviation for finding the script to execute,"
-  echo "while the arguments are passed on to that script. In general, the options"
-  echo "are mutually exclusive."
+  echo "while the arguments are passed on to that script. In general, these"
+  echo "options are mutually exclusive."
   echo
   echo "Options:"
   echo "  -c,--create       Creates and edits a new script named <command>.kts"
-  echo "  -e,--edit         Edits the existing script for <command>"
+  echo "  -e,--edit         Edits the existing script matching <command>"
   echo "  -s,--search-path  Prints the search path for the current directory"
   echo "  -f,--file         Prints the filename of the matching script"
   echo "  -d,--dir          Prints the directory containing the matching script"
@@ -63,6 +63,10 @@ while [[ -n $1 && $1 == -* ]]; do
   *) echo "Ignoring unknown option: $1"; shift;;
   esac
 done
+
+if [[ $DEBUG -gt 0 ]]; then
+  VERBOSE=1
+fi
 
 # Find the directory containing this script
 SOURCE="${BASH_SOURCE[0]}"
@@ -237,12 +241,12 @@ function make-search-path {
 function find-script {
   if [[ -d $2 ]]; then
     # echo "Searching $2 for scripts matching $1"
-    files=($(find "$2/" -iname "$1*.kts" -maxdepth 1 -type f))
+    files=($(find "$2/" -iname "$1*.kts" -maxdepth 1 -type f | sort))
     for f in "${files[@]}"; do
       local path=$(echo $f | sed 's,//,/,g')
       local filename=$(basename "$f")
       local name="${filename%.*}"
-      SCRIPTS+=("$name:$path")
+      SCRIPTS+=("$name|$path")
     done
   fi
 }
@@ -258,10 +262,45 @@ function find-command {
   for cmd in "${cmds[@]}"; do
     if [[ $cmd == $1* ]]; then
       # echo "Matched command $cmd in script $2"
-      SCRIPTS+=("$cmd:$2")
+      SCRIPTS+=("$cmd|$2")
     fi
   done
   shopt -u nocasematch
+}
+
+# Checks the search results for partial and exact matches
+# Args: command
+function check-results {
+  IDENTICAL=1
+  local base=
+  shopt -s nocasematch
+  for mr in "${SCRIPTS[@]}"; do
+    # echo "Checking result for $mr"
+    IFS='|' read -ra PARSED <<< "$mr"
+    local cmd="${PARSED[0]}"
+
+    # Are all of the results for the same command?
+    if [[ -z $base ]]; then
+      base="$cmd"
+    elif [[ "$cmd" != "$base" ]]; then
+      IDENTICAL=0
+    fi
+
+    # Save the first exact match
+    if [[ "$cmd" == "$1" ]]; then
+      if [[ -z $EXACT_COMMAND ]]; then
+        EXACT_COMMAND="$cmd"
+        EXACT_SCRIPT="${PARSED[1]}"
+      fi
+    fi
+  done
+  shopt -u nocasematch
+
+  if [[ $DEBUG -gt 0 ]]; then
+    echo "Identical:      $IDENTICAL"
+    echo "Exact Command:  $EXACT_COMMAND"
+    echo "Exact Script:   $EXACT_SCRIPT"
+  fi
 }
 
 # Checks the contents of the script for a run directory spec
@@ -417,21 +456,36 @@ for p in "${PATHS[@]}"; do
   fi
 done
 
+if [[ $DEBUG -gt 0 ]]; then
+  echo "All matches:"
+  for s in "${SCRIPTS[@]}"; do
+    IFS='|' read -ra PARSED <<< "$s"
+    printf "%-23s %s\n" "${PARSED[0]}" "${PARSED[1]}"
+  done
+fi
+
 # Check to make sure we only found one script
 if [[ ${#SCRIPTS[@]} -eq 0 ]]; then
   echo "ERROR: could not find script matching '$COMMAND'"
   exit 1
 fi
 if [[ ${#SCRIPTS[@]} -gt 1 ]]; then
-  echo "ERROR: found too many scripts matching '$COMMAND':"
-  for s in "${SCRIPTS[@]}"; do
-    echo "$s"
-  done
-  exit 1
+  check-results "$COMMAND"
+  if [[ -n $EXACT_COMMAND ]]; then
+    export KO_COMMAND="$EXACT_COMMAND"
+    export KO_SCRIPT="$EXACT_SCRIPT"
+  elif [[ $IDENTICAL -eq 0 ]]; then
+    echo "ERROR: found too many scripts matching '$COMMAND':"
+    echo
+    printf "%s\n" "${SCRIPTS[@]}" | column -t -s \|
+    exit 1
+  fi
 fi
-IFS=':' read -ra PARSED <<< "${SCRIPTS[0]}"
-export KO_COMMAND="${PARSED[0]}"
-export KO_SCRIPT="${PARSED[1]}"
+if [[ -z $KO_COMMAND ]]; then
+  IFS='|' read -ra PARSED <<< "${SCRIPTS[0]}"
+  export KO_COMMAND="${PARSED[0]}"
+  export KO_SCRIPT="${PARSED[1]}"
+fi
 export KO_SCRIPT_DIR="$(basename "$KO_SCRIPT")"
 
 if [[ $VERBOSE -gt 0 ]]; then
