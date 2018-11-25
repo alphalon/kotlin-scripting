@@ -9,12 +9,7 @@ version = "0.1-SNAPSHOT"
 
 plugins {
     kotlin("jvm") version "1.3.10"
-    id("application")
     id("maven-publish")
-}
-
-application {
-    mainClassName = "io.alphalon.kotlin.scripting.MainKt"
 }
 
 sourceSets["test"].java {
@@ -29,10 +24,7 @@ repositories {
 dependencies {
     compile(kotlin("stdlib-jdk8"))
     compile(kotlin("scripting-jvm"))
-    compile("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Versions.kotlinCoroutines}")
-
-    // implementation(kotlin("scripting-common"))
-    // implementation(kotlin("script-util"))
+    // compile("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Versions.kotlinCoroutines}")
 
     testCompile(kotlin("test-junit5"))
 }
