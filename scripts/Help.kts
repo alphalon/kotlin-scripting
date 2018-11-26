@@ -21,7 +21,7 @@
 //CMD help - Provides information about available commands
 //HELP
 
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1-SNAPSHOT
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.0
 
 import io.alphalon.kotlin.scripting.*
 

@@ -6,12 +6,9 @@
 //DIR $KO_PROJECT
 //CMD publish - Publishes the project after running tests successfully
 
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1-SNAPSHOT
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.0
 
 import io.alphalon.kotlin.scripting.*
-
-// Upgrade project scripts
-runScript("upgradeDependency", "--quiet", "--project").fail()
 
 // Run tests
 exec("./gradlew clean test").fail {

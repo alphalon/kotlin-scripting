@@ -5,7 +5,7 @@ object Versions {
 }
 
 group = "io.alphalon.kotlin"
-version = "0.1-SNAPSHOT"
+version = "0.1.0"
 
 plugins {
     kotlin("jvm") version "1.3.10"
