@@ -28,10 +28,8 @@ import io.alphalon.kotlin.scripting.*
 import java.io.File
 
 // Ensure we were called by the ko.sh bash script
-if (Framework.script == null) {
-    echo("ERROR: cannot determine search path")
-    exit(1)
-}
+if (Framework.script == null)
+    error("Cannot determine search path unless called from the framework script")
 
 // Process arguments
 fun List<String>.hasFlag(vararg options: String) = intersect(options.toList()).isNotEmpty()
@@ -43,6 +41,8 @@ val scopeRepo = options.hasFlag("-r", "--repo")
 val scopeProject = options.hasFlag("-p", "--project")
 val scopeModule = options.hasFlag("-m", "--module")
 val dryRun = options.hasFlag("-d", "--dry-run")
+
+setQuietMode(options.hasFlag("-q", "--quiet"))
 
 val version = if (arguments.isNotEmpty()) arguments.first() else Framework.frameworkVersion
 val library = if (arguments.count() > 1) arguments[1] else "io.alphalon.kotlin:kotlin-scripting"
@@ -62,6 +62,7 @@ if (printHelp) {
           -p, --project    Upgrade all scripts in the current project
           -m, --module     Upgrade all scripts in the module
           -d, --dry-run    Performs a dry run
+          -q, --quiet      Quiet mode
     """.trimIndent()
 
     echo(usage)
@@ -69,10 +70,8 @@ if (printHelp) {
 }
 
 // Validate arguments
-if (library.split(":").count() != 2) {
-    echo("ERROR: the library must specify groupId:artifactId ($library)")
-    exit(1)
-}
+if (library.split(":").count() != 2)
+    error("The library must specify groupId:artifactId (not $library)")
 
 // Scope results
 val scope = try {
@@ -83,8 +82,7 @@ val scope = try {
         else -> null
     }
 } catch (e: RuntimeException) {
-    echo("ERROR: could not find ${e.message} scope")
-    exit(1)
+    error("Could not find ${e.message} scope")
 }
 
 echo("Upgrading to $library:$version")

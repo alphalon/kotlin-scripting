@@ -26,10 +26,8 @@
 import io.alphalon.kotlin.scripting.*
 
 // Ensure we were called by the ko.sh bash script
-if (Framework.script == null) {
-    echo("ERROR: cannot determine search path")
-    exit(1)
-}
+if (Framework.script == null)
+    error("Cannot determine search path unless called from the framework script")
 
 // Process arguments
 fun List<String>.hasFlag(vararg options: String) = intersect(options.toList()).isNotEmpty()
@@ -73,8 +71,7 @@ val top = try {
         else -> null
     }
 } catch (e: RuntimeException) {
-    echo("ERROR: could not find ${e.message} scope")
-    exit(1)
+    error("Could not find ${e.message} scope")
 }
 
 echo("Kotlin Scripting Library ${Framework.libraryVersion}")

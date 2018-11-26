@@ -24,19 +24,48 @@ package io.alphalon.kotlin.scripting
 import kotlin.math.max
 
 private var output = false
+private var quietMode = false
 private val capturedTable: MutableList<List<String>> = mutableListOf()
+
+/**
+ * Enables or disabled quiet mode.
+ */
+fun setQuietMode(quiet: Boolean) {
+    quietMode = quiet
+}
 
 /**
  * Outputs a line to the console.
  */
 fun echo(str: String? = null) {
-    if (str != null) {
-        println(str)
-        output = true
-    } else {
-        println()
-        output = false
+    if (!quietMode) {
+        if (str != null) {
+            println(str)
+            output = true
+        } else {
+            println()
+            output = false
+        }
     }
+}
+
+/**
+ * Outputs a warning message even if quite mode is enabled.
+ */
+fun warning(message: String) {
+    val wasQuiet = quietMode
+    quietMode = false
+    echo("WARNING: $message")
+    quietMode = wasQuiet
+}
+
+/**
+ * Outputs an error message and terminates the script.
+ */
+fun error(message: String, exitCode: Int = 1): Nothing {
+    quietMode = false
+    echo("ERROR: $message")
+    exit(exitCode)
 }
 
 /**
@@ -44,7 +73,7 @@ fun echo(str: String? = null) {
  * output.
  */
 fun echoSeparator() {
-    if (output) {
+    if (output && !quietMode) {
         println()
         output = false
     }
@@ -67,7 +96,7 @@ fun addTableRow(vararg columns: String) {
  * between the columns.
  */
 fun echoTable(separator: String = "    ") {
-    if (capturedTable.isNotEmpty()) {
+    if (capturedTable.isNotEmpty() && !quietMode) {
         // Determine maximum width for each column
         val numColumns = capturedTable.map { it.count() }.max() ?: 0
         val widths = Array(numColumns) { 0 }
@@ -85,6 +114,6 @@ fun echoTable(separator: String = "    ") {
         capturedTable.forEach {
             echo(String.format(format, *it.toTypedArray()))
         }
-        capturedTable.clear()
     }
+    capturedTable.clear()
 }
