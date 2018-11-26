@@ -15,9 +15,8 @@ runScript("upgradeDependency", "--quiet", "--project").fail()
 
 // Run tests
 exec("./gradlew clean test").fail {
-    echo("ERROR: there were failing tests")
+    error("there were failing tests")
 }
 
 // Build project library and install in local maven repository
 exec("./gradlew publishToMavenLocal").fail()
-

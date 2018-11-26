@@ -69,7 +69,7 @@ if (printHelp) {
 
 // Validate arguments
 if (library.split(":").count() != 2)
-    error("The library must specify groupId:artifactId (not $library)")
+    error("the library must specify groupId:artifactId (not $library)")
 
 // Scope results
 val scope = try {
@@ -80,7 +80,7 @@ val scope = try {
         else -> null
     }
 } catch (e: RuntimeException) {
-    error("Could not find ${e.message} scope")
+    error("could not find ${e.message} scope")
 }
 
 echo("Upgrading to $library:$version")
