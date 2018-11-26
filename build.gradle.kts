@@ -34,6 +34,11 @@ dependencies {
     testImplementation(kotlin("test-junit5"))
 }
 
+// Remove IntelliJ build dir
+tasks.clean {
+    delete("out")
+}
+
 // Add Implementation-Version for access by the Scripting Library
 tasks.jar {
     manifest {
