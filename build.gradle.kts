@@ -42,8 +42,20 @@ tasks.clean {
     delete("out")
 }
 
+// Configure tests to run using JUnit 5 and output summary
+val printTestResult: KotlinClosure2<TestDescriptor, TestResult, Void>
+    get() = KotlinClosure2({ desc, result ->
+        // Match top-level suite
+        if (desc.parent == null) {
+            println("Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} " + "successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)")
+        }
+        null
+    })
+
 tasks.test {
     useJUnitPlatform()
+
+    afterSuite(printTestResult)
 }
 
 // Add Implementation-Version for access by the Scripting Library
