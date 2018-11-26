@@ -10,20 +10,32 @@ package io.alphalon.kotlin.scripting
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class FrameworkTest {
 
     @Test
     fun testVersion() {
+        // Not set by ko.sh
+        assertEquals("", Framework.frameworkVersion)
+
         // Can't read manifest from within project
         assertEquals("", Framework.libraryVersion)
     }
 
     @Test
+    fun testRuntime() {
+        // Shouldn't have access to these when not run through ko.sh
+        assertNull(Framework.script)
+        assertNull(Framework.searchPath)
+    }
+
+    @Test
     fun testDirectories() {
-        val dir = File(System.getProperty("user.dir"))
-        assertEquals(dir, Framework.repo)
-        assertEquals(dir, Framework.project)
-        assertEquals(dir, Framework.module)
+        // Shouldn't have access to these when not run through ko.sh
+        assertNull(Framework.runDir)
+        assertNull(Framework.repo)
+        assertNull(Framework.project)
+        assertNull(Framework.module)
     }
 }
