@@ -1,5 +1,6 @@
 /*
  * Project: Kotlin Scripting
+ * Script:  Help.kts
  * Created: Nov 21, 2018
  *
  * Copyright (c) 2018 Alphalon, LLC. All rights reserved.
@@ -38,9 +39,9 @@ val arguments = args.filter { !it.startsWith("-") }
 val printHelp = options.hasFlag("-h", "--help")
 val printPath = options.hasFlag("-f", "--find")
 val printDirectories = options.hasFlag("-v", "--verbose")
-val filterRepo = options.hasFlag("-r", "--repo")
-val filterProject = options.hasFlag("-p", "--project")
-val filterModule = options.hasFlag("-m", "--module")
+val scopeRepo = options.hasFlag("-r", "--repo")
+val scopeProject = options.hasFlag("-p", "--project")
+val scopeModule = options.hasFlag("-m", "--module")
 
 // Print usage and exit
 if (printHelp) {
@@ -53,10 +54,10 @@ if (printHelp) {
 
         Options:
           -f, --find       Prints the path of the script associated with the commands
-          -v, --verbose    Prints the discovered directories
           -r, --repo       Limits the output to the repository
           -p, --project    Limits the output to the project
           -m, --module     Limits the output to the module
+          -v, --verbose    Prints the discovered directories
     """.trimIndent()
 
     echo(usage)
@@ -64,11 +65,16 @@ if (printHelp) {
 }
 
 // Scope results
-val top = when {
-    filterRepo -> Framework.repo ?: Framework.project
-    filterProject -> Framework.project ?: Framework.repo
-    filterModule -> Framework.module
-    else -> null
+val top = try {
+    when {
+        scopeRepo -> Framework.repo ?: throw RuntimeException("repository")
+        scopeProject -> Framework.project ?: throw RuntimeException("project")
+        scopeModule -> Framework.module ?: throw RuntimeException("module")
+        else -> null
+    }
+} catch (e: RuntimeException) {
+    echo("ERROR: could not find ${e.message} scope")
+    exit(1)
 }
 
 echo("Kotlin Scripting Library ${Framework.libraryVersion}")
