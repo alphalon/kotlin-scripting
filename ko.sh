@@ -398,6 +398,7 @@ function edit-script {
     $EDITOR $KO_SCRIPT
   else
     echo "ERROR: editor not specified by either VISUAL or EDITOR environment variable"
+    echo "Your script file is located at ${KO_SCRIPT}"
     exit 1
   fi
 
