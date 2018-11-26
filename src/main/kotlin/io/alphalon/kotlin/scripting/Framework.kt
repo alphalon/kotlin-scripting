@@ -22,6 +22,15 @@
 package io.alphalon.kotlin.scripting
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.function.BiPredicate
+import kotlin.streams.toList
+
+/**
+ * Returns whether the [name] matches a Kotlin source file.
+ */
+private fun kotlinFile(name: String) = name.endsWith(".kts") || name.endsWith(".kt")
 
 /**
  * Returns information about the currently running script called from the `ko`
@@ -123,12 +132,12 @@ fun commandsInDirectory(directory: File): List<Command> = directory
 fun availableCommands(ancestor: File? = null): List<Command> =
     Framework.searchPath?.let { path ->
         path.flatMap { file ->
-                when {
-                    file.isDirectory -> commandsInDirectory(file)
-                    file.isFile -> commandsInFile(file)
-                    else -> listOf()
-                }
+            when {
+                file.isDirectory -> commandsInDirectory(file)
+                file.isFile -> commandsInFile(file)
+                else -> listOf()
             }
+        }
             .filter { ancestor == null || it.script.isDescendant(ancestor) }
             .sortedBy { it.name.toLowerCase() }
     } ?: listOf()
@@ -178,4 +187,58 @@ fun searchForCommand(name: String, ancestor: File? = null): Command? {
 fun runScript(command: Command, args: List<String> = listOf()): Int {
     val cmd = listOf("ko", command.name) + args
     return exec(cmd)?.exitValue() ?: 1
+}
+
+/**
+ * Finds all scripts located in the specified or current [directory] and the
+ * immediate search directories.
+ */
+fun findNearbyScripts(directory: File = File(System.getProperty("user.dir"))): List<File> {
+    val dirs = listOf(directory) + System.getenv("KO_SEARCH_DIRS").split(":").map { File(directory, it) }
+    return dirs.fold(listOf()) { scripts, dir ->
+        val found = dir.listFiles { file -> file.isFile && kotlinFile(file.name) }
+        if (found != null) scripts + found else scripts
+    }
+}
+
+/**
+ * Finds all the Kotlin source and scripts below the [scope] directory.
+ */
+fun findAllScriptsWithinScope(scope: File): List<File> {
+    return Files.find(Paths.get(scope.absolutePath), 100, BiPredicate { path, _ ->
+        kotlinFile(path.fileName.toString())
+    }).map { it.toFile() }.filter { it.isFile }.toList()
+}
+
+/**
+ * Represents a single declared dependency in a script.
+ */
+data class Dependency(val script: File, val group: String, val artifact: String, val version: String) {
+    val library
+        get() = "$group:$artifact"
+    val spec
+        get() = "$group:$artifact:$version"
+}
+
+/**
+ * Returns the dependencies declares in the [script] file.
+ */
+fun findScriptDependencies(script: File): List<Dependency> {
+    val regex = Regex("""^\s*//DEPS\s*(.*)|^\s*@file:DependsOn\((.*)\)""")
+
+    return script.bufferedReader().useLines { lines ->
+        lines.mapNotNull {
+            val groups = regex.find(it)?.groups
+            groups?.get(1)?.value ?: groups?.get(2)?.value
+        }.toList()
+            .flatMap { it.split(",") }
+            .map { it.trim(' ', '"') }
+            .map { it.split(":") }
+            .mapNotNull {
+                if (it.count() == 3)
+                    Dependency(script, it[0].trim(), it[1].trim(), it[2].trim())
+                else
+                    null
+            }
+    }
 }

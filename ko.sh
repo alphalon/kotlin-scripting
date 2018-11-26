@@ -80,6 +80,7 @@ export KO_HOME="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 # Get version from build
 if [[ -f "$KO_HOME/scripts/ko-framework-version.sh" ]]; then
   source "$KO_HOME/scripts/ko-framework-version.sh"
+  export KO_VERSION
 fi
 if [[ -n $PRINT_VERSION ]]; then
   echo "$KO_VERSION"
@@ -421,6 +422,7 @@ if [[ -z $KO_SEARCH_PATH ]]; then
   fi
   make-search-path
 fi
+export KO_SEARCH_DIRS=$(join_by : "${SEARCH_DIRS[@]}")
 
 if [[ $PRINT_SEARCH -gt 0 ]]; then
   echo "$KO_SEARCH_PATH"
