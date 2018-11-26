@@ -89,6 +89,14 @@ object Framework {
     val libraryVersion: String by lazy {
         this.javaClass.`package`.implementationVersion ?: ""
     }
+
+    /**
+     * Exits the script if it was not called via ko.sh.
+     */
+    fun require() {
+        if (script == null)
+            error("this script must be called from the framework ko.sh script")
+    }
 }
 
 data class Command(val name: String, val description: String, val script: File)

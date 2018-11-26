@@ -25,9 +25,7 @@
 
 import io.alphalon.kotlin.scripting.*
 
-// Ensure we were called by the ko.sh bash script
-if (Framework.script == null)
-    error("Cannot determine search path unless called from the framework script")
+Framework.require()
 
 // Process arguments
 fun List<String>.hasFlag(vararg options: String) = intersect(options.toList()).isNotEmpty()
