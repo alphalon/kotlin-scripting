@@ -6,7 +6,7 @@
 //DIR $KO_PROJECT
 //CMD publish - Publishes the project after running tests successfully
 
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.0
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.1-SNAPSHOT
 
 import io.alphalon.kotlin.scripting.*
 

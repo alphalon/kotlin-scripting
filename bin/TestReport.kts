@@ -5,7 +5,7 @@
 
 //CMD testReport - Opens the test report in a browser
 
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.0
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.1-SNAPSHOT
 
 import io.alphalon.kotlin.scripting.*
 import java.io.File
