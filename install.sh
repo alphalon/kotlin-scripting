@@ -76,3 +76,6 @@ fi
 # Save version number
 version=$(./gradlew properties -q 2>/dev/null | grep "version:" | awk '{print $2}' | tr -d '[:space:]')
 echo -e "#!/usr/bin/env bash\nKO_VERSION=\"$version\"" >scripts/ko-framework-version.sh
+
+# Upgrade project scripts
+ko upgradeDependency --quiet --project
