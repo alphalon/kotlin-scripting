@@ -100,7 +100,7 @@ fun replaceDependency(dependency: Dependency, version: String) {
     val changed = dependency.script.bufferedReader().useLines { lines ->
         lines.map { it.replace(old, new) }.toList()
     }
-    dependency.script.writeText(changed.joinToString(System.lineSeparator()))
+    dependency.script.writeText(changed.joinToString(System.lineSeparator(), postfix = System.lineSeparator()))
 }
 
 // Find scripts to upgrade (those depending on a different version of the library)
