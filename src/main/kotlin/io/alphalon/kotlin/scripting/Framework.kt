@@ -113,17 +113,16 @@ fun commandsInDirectory(directory: File): List<Command> = directory
     } ?: listOf()
 
 /**
- * Returns a list of available commands based on the [search path][Framework.searchPath].
- * The list may be empty if the search path could not be determined or no
- * scripts could be found.
+ * Returns a list of available commands based on the
+ * [search path][Framework.searchPath]. The list may be empty if the search path
+ * could not be determined or no scripts could be found.
  *
  * If supplied, the commands must reside within the [ancestor] directory or any
  * of its descendants.
  */
 fun availableCommands(ancestor: File? = null): List<Command> =
     Framework.searchPath?.let { path ->
-        path.drop(1)
-            .flatMap { file ->
+        path.flatMap { file ->
                 when {
                     file.isDirectory -> commandsInDirectory(file)
                     file.isFile -> commandsInFile(file)
