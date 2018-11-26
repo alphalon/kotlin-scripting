@@ -12,8 +12,13 @@ plugins {
     id("maven-publish")
 }
 
-sourceSets["test"].java {
-    srcDir("scripts")
+// Add scripts to test sources for code completion
+sourceSets {
+    test {
+        java {
+            srcDir("scripts")
+        }
+    }
 }
 
 repositories {
@@ -22,31 +27,36 @@ repositories {
 }
 
 dependencies {
-    compile(kotlin("stdlib-jdk8"))
-    compile(kotlin("scripting-jvm"))
+    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("scripting-jvm"))
     // compile("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Versions.kotlinCoroutines}")
 
-    testCompile(kotlin("test-junit5"))
+    testImplementation(kotlin("test-junit5"))
 }
 
-val jar by tasks.getting(Jar::class) {
+// Add Implementation-Version for access by the Scripting Library
+tasks.jar {
     manifest {
-        attributes["Implementation-Version"] = version
+        attributes(
+            "Implementation-Title" to "KO - Kotlin Scripting",
+            "Implementation-Version" to version
+        )
     }
 }
 
-val sourcesJar by tasks.registering(Jar::class) {
+// Publish with sources to assist in writing scripts
+task<Jar>("sourcesJar") {
     classifier = "sources"
-    from(sourceSets["main"].allSource)
+    from(sourceSets.main.get().allJava)
 }
 
 publishing {
     publications {
-        register("mavenJava", MavenPublication::class) {
+        create<MavenPublication>("mavenJava") {
             artifactId = "kotlin-scripting"
 
             from(components["java"])
-            artifact(sourcesJar.get())
+            artifact(tasks["sourcesJar"])
         }
     }
 }
