@@ -32,11 +32,18 @@ dependencies {
     // compile("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Versions.kotlinCoroutines}")
 
     testImplementation(kotlin("test-junit5"))
+    testImplementation("com.github.holgerbrandl:kscript-annotations:1.2")
+
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.0.0")
 }
 
 // Remove IntelliJ build dir
 tasks.clean {
     delete("out")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 // Add Implementation-Version for access by the Scripting Library

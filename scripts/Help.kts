@@ -98,7 +98,7 @@ if (arguments.isNotEmpty()) {
         echoSeparator()
 
         if (commandProvidesHelp(command))
-            runScript(command, listOf("--help"))
+            runScript(command, "--help")
         else
             echo(command.description)
     } else {

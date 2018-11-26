@@ -116,6 +116,8 @@ ko upgradeDependency [--repo|--project|--module] [version [groupId:artifactId]]
 
 Without any arguments, this command will upgrade your nearby scripts to the latest version of this Scripting Library. You can change the scope of the updates using the --repo, --project, or --module options, specify a specific version, and/or upgrade dependencies to other libraries.
 
+Note: The kscript `DependsOn` annotation is supported, but each one must reside on a single line and contain only string literals.
+
 ### Script conventions
 
 The framework defines two special comments that can be placed in your Kotlin scripts:

@@ -26,6 +26,14 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 /**
+ * Returns the value of the environment variable which may be overridden by a
+ * Java property.
+ */
+fun env(name: String): String? {
+    return System.getProperty(name) ?: System.getenv(name)
+}
+
+/**
  * Executes the [block] on a non-zero exit code and terminates the process.
  */
 fun Process?.fail(block: (() -> Unit)? = null) {
