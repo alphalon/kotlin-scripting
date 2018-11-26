@@ -10,5 +10,3 @@
 
 import io.alphalon.kotlin.scripting.*
 
-println("Hello World from ${Framework.script ?: "<command>"}")
-println("Built with Kotlin Scripting ${Framework.libraryVersion}")
