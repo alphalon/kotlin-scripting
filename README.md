@@ -48,7 +48,7 @@ While kscript supports executing `.kt` files, this framework only calls scripts 
 
 ### Usage
 
-Running `ko` without any arguments will print usage information with more options, but here are the highlights:
+Running `ko` without any arguments or with the `--help` option will print usage information with more details, but here are the highlights:
 
 #### Executing a script
 
@@ -105,6 +105,16 @@ ko -e <command>
 This uses the same search resolution as executing a script (partial command matching applies) and opens the discovered script using the editor specified by either of the `VISUAL` or `EDITOR` environment variables.
 
 Alternatively, `ko --idea <command>` leverages kscript to create a temporary project and edit the file using IntelliJ IDEA.
+
+#### Upgrading dependencies
+
+Since each script is a standalone program, it must declare its own dependencies. To ease the pain of keeping versions the same across scripts, this framework includes a command to upgrade your Kotlin scripts:
+
+```bash
+ko upgradeDependency [--repo|--project|--module] [version [groupId:artifactId]]
+```
+
+Without any arguments, this command will upgrade your nearby scripts to the latest version of this Scripting Library. You can change the scope of the updates using the --repo, --project, or --module options, specify a specific version, and/or upgrade dependencies to other libraries.
 
 ### Script conventions
 
