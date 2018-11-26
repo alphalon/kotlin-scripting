@@ -46,6 +46,26 @@ While kscript supports executing `.kt` files, this framework only calls scripts 
 //INCLUDE util.kt
 ```
 
+### Getting Started
+
+Step 1: Follow the instructions in the [Installation](#installation) section.
+
+Step 2: Create a `scripts` subdirectory in your project's root directory.
+
+Step 3: Create your first script and add `println("Hello World")` to the end:
+
+```bash
+ko -c MyFirstScript
+```
+
+The new script will be created from a template and placed in your `scripts` directory automatically. It will also be opened in your preferred editor so you can get started writing.
+
+Step 4: Run your script from any directory within your project:
+
+```bash
+ko MyFirstScript
+```
+
 ### Usage
 
 Running `ko` without any arguments or with the `--help` option will print usage information with more details, but here are the highlights:
