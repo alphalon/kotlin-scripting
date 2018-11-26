@@ -112,7 +112,7 @@ fun commandsInFile(file: File): List<Command> =
  */
 fun commandsInDirectory(directory: File): List<Command> = directory
     .listFiles { _, name -> name.endsWith(".kts") }
-    ?.filter { it.name != "ko.kts" }
+    ?.filter { it.name != "ko.kts" && !it.name.endsWith(".gradle.kts") }
     ?.map { file ->
         val scriptName = file.name.removeSuffix(".kts")
         commandsInFile(file)
@@ -137,8 +137,7 @@ fun availableCommands(ancestor: File? = null): List<Command> =
                 file.isFile -> commandsInFile(file)
                 else -> listOf()
             }
-        }
-            .filter { ancestor == null || it.script.isDescendant(ancestor) }
+        }.filter { ancestor == null || it.script.isDescendant(ancestor) }
             .sortedBy { it.name.toLowerCase() }
     } ?: listOf()
 
