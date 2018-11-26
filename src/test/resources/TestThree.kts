@@ -6,7 +6,7 @@
 //DIR $PWD
 //CMD testThree - Enter short description here
 
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1-SNAPSHOT, com.github.salomonbrys.kotson:kotson:2.5.0
+//DEPS io.alphalon.kotlin:scripting:0.0.1, com.github.salomonbrys.kotson:kotson:2.5.0
 
 // Single dependency
 @file:DependsOn("io.ktor:ktor-client:1.0.0")

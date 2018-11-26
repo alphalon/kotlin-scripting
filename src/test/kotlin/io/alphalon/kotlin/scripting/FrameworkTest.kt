@@ -16,14 +16,14 @@ class FrameworkTest {
 
     @BeforeTest
     fun configureFramework() {
-        System.setProperty("KO_VERSION", "0.1")
+        System.setProperty("KO_VERSION", "0.0.1")
         System.setProperty("KO_SEARCH_PATH", "${scriptDir.absolutePath}:${scriptDir.absolutePath}/ko.kts")
     }
 
     @Test
     fun testVersion() {
         // Not set by ko.sh
-        assertEquals("0.1", Framework.frameworkVersion)
+        assertEquals("0.0.1", Framework.frameworkVersion)
 
         // Can't read manifest from within project
         assertEquals("", Framework.libraryVersion)
@@ -43,7 +43,7 @@ class FrameworkTest {
         val deps = findScriptDependencies(script)
 
         assertEquals(1, deps.count())
-        assertEquals(Dependency(script, "io.alphalon.kotlin", "kotlin-scripting", "0.1-SNAPSHOT"), deps[0])
+        assertEquals(Dependency(script, "io.alphalon.kotlin", "scripting", "0.0.1"), deps[0])
     }
 
     @Test
@@ -52,7 +52,7 @@ class FrameworkTest {
         val deps = findScriptDependencies(script)
 
         assertEquals(5, deps.count())
-        assertTrue(deps.contains(Dependency(script, "io.alphalon.kotlin", "kotlin-scripting", "0.1-SNAPSHOT")))
+        assertTrue(deps.contains(Dependency(script, "io.alphalon.kotlin", "scripting", "0.0.1")))
         assertTrue(deps.contains(Dependency(script, "com.github.salomonbrys.kotson", "kotson", "2.5.0")))
         assertTrue(deps.contains(Dependency(script, "io.ktor", "ktor-client", "1.0.0")))
         assertTrue(deps.contains(Dependency(script, "org.slf4j", "slf4j-api", "1.7.25")))

@@ -10,6 +10,6 @@
 //CMD invalid - INVALID COMMAND
 //CMD testTwo - Test with a single dependency
 
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1-SNAPSHOT
+//DEPS io.alphalon.kotlin:scripting:0.0.1
 
 import io.alphalon.kotlin.scripting.*
