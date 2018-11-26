@@ -447,6 +447,7 @@ if [[ $CREATE_SCRIPT == 1 ]]; then
 fi
 
 # Search for matching script
+KO_COMMAND=
 IFS=':' read -ra PATHS <<< "${KO_SEARCH_PATH}"
 SCRIPTS=()
 for p in "${PATHS[@]}"; do
