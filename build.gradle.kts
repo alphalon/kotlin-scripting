@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 // Project: kotlin-scripting
 
 group = "io.alphalon.kotlin"
@@ -44,10 +42,13 @@ tasks.clean {
     delete("out")
 }
 
-// Configure Kotlin compiler for Java 1.8
-// https://kotlinlang.org/docs/reference/using-gradle.html#compiler-options
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions.jvmTarget = "1.8"
+// Configure Kotlin compiler
+tasks.compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+tasks.compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
 
 // Configure tests to run using JUnit 5 and output summary
 val printTestResult: KotlinClosure2<TestDescriptor, TestResult, Void>
