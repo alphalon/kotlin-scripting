@@ -1,15 +1,15 @@
-# KO - Kotlin Scripting
+# KO - Kotlin Shell Scripting
 
 This project consists of a framework and a library, which can be used together or independently of each other. The framework provides support for running your scripts from the command line while the library provides APIs for your Kotlin scripts.
 
-This Kotlin Scripting project builds on the excellent kscript command line tool hosted on [Github](https://github.com/holgerbrandl/kscript). See the kscript project for details on writing Kotlin scripts with just some of these advantages:
+This project builds on the excellent [kscript command line tool](https://github.com/holgerbrandl/kscript). See that project for details on writing Kotlin scripts with just some of these advantages:
 
 - Maven-style dependency management
 - Automatic compilation of scripts
 - File includes for sharing non-deployed code among scripts
 - Specification of JVM command line arguments
 
-This project has been designed to make using kscript easier without limiting the features or flexibility it provides. For example, scripts can still be run directly from the command line while utilizing this scripting library.
+This project has been designed to make using kscript easier without limiting the features or flexibility it provides. For example, scripts can still be run directly from the command line while utilizing (most of) this scripting library.
 
 ## Scripting Framework
 
@@ -163,7 +163,11 @@ This comment is required for command resolution in `ko.kts` scripts, which suppo
 
 The presence of a `//HELP` comment indicates the script supports being called with the `--help` argument to output usage information to the console. 
 
-### Script files
+#### Naming
+
+While not strictly required, it is recommended to name script files using upper camel-case and commands with lower camel-case. Naming commands consistently will not only reduce memory fatigue but also allow for better matching when identical command names are shadowed.
+
+#### Script files
 
 While kscript supports executing `.kt` files, this framework only calls scripts with the `.kts` extension. This allows for a clean separation of files intended to be invoked directly and those that implement shared functionality and can be included in other scripts using a comment directive:
 

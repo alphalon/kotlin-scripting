@@ -32,9 +32,8 @@ if [[ -z $1 || $1 == "-h" || $1 == "--help" ]]; then
   echo "Usage:"
   echo "  ko [options...] <command> [args...]"
   echo
-  echo "The command can be an abbreviation for finding the script to execute,"
-  echo "while the arguments are passed on to that script. In general, these"
-  echo "options are mutually exclusive."
+  echo "The command can be an abbreviation for matching the script to execute,"
+  echo "while the args are passed on to that script."
   echo
   echo "Options:"
   echo "  -c,--create         Creates and edits a new script named <command>.kts"
@@ -440,8 +439,11 @@ fi
 
 COMMAND=$1
 if [[ -z $COMMAND ]]; then
-  echo "ERROR: the command parameter has not been specified"
-  exit 1
+  if [[ $VERBOSE -eq 0 ]]; then
+    echo "ERROR: the command parameter has not been specified"
+    exit 1
+  fi
+  exit
 fi
 
 # Create new script in closest location
