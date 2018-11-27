@@ -81,7 +81,7 @@ Successful selection (for execution, editing, etc) requires one of the following
 
 In the case of successfully matching against multiple scripts (or implementations of the same command), the first one on the search path is chosen.
 
-If multiple possible matches are found, no processing will be performed but the matching commands are displayed to enable the user to disambiguate between them easily. (There will also be a non-zero exit code to detect this situation from other shell scripts.)
+If multiple possible matches are found, no processing will be performed but the matching commands are displayed to enable the user to disambiguate between them easily. (There is a non-zero exit code to detect this situation from other shell scripts.)
 
 #### Listing available commands
 
@@ -256,6 +256,19 @@ If the install script detects a $HOME/bin directory, it will create a symlink `k
 Alternatively, you can create an alias to this script, or copy the `ko.sh` file and `scripts` directory to any location on your executable path.
 
 The `./install.sh` script also builds the scripting library and installs it in your local maven repository for resolution by kscript. This script can be run whenever you make changes to the library sources so that they become available to your scripts through kscript dependency resolution.
+
+## Example Scripts
+
+The built-in commands are implemented as Kotlin scripts and located in this project's `script` directory:
+
+- [Help](scripts/Help.kts) - Provides information about available commands
+- [Upgrade Dependency](scripts/UpgradeDependency.kts) - Modifies dependency versions in existing scripts
+
+In addition, the `bin` directory contains automation scripts for this project.
+
+## Diagnostics
+
+Run the `ko` script with the `--verbose` options to output information regarding the script runtime environment.
 
 ## TODO
 
