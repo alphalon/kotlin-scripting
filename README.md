@@ -1,6 +1,6 @@
 # KO - Kotlin Scripting
 
-This project consists of a framework and a library, which can be used together or independently of each other. The framework provides support for running your scripts from the command line while the library provides APIs called from within your Kotlin scripts.
+This project consists of a framework and a library, which can be used together or independently of each other. The framework provides support for running your scripts from the command line while the library provides APIs for your Kotlin scripts.
 
 This Kotlin Scripting project builds on the excellent kscript command line tool hosted on [Github](https://github.com/holgerbrandl/kscript). See the kscript project for details on writing Kotlin scripts with just some of these advantages:
 
@@ -9,13 +9,13 @@ This Kotlin Scripting project builds on the excellent kscript command line tool 
 - File includes for sharing non-deployed code among scripts
 - Specification of JVM command line arguments
 
-This project has been designed to make using kscript easier without limiting the features or flexibility it provides. For example, scripts can still be run directly from the command lime while utilizing this scripting library.
+This project has been designed to make using kscript easier without limiting the features or flexibility it provides. For example, scripts can still be run directly from the command line while utilizing this scripting library.
 
 ## Scripting Framework
 
-The primary purpose of this framework is to provide a wrapper script, named `ko.sh`, that locates and executes Kotlin scripts. The first argument, which specifies the command or script to execute, is matched against the Kotlin scripts from multiple directories through a search path to well-known locations within a repository, project, or home directory.
+The primary purpose of this framework is to provide a wrapper script, named `ko.sh`, that locates and executes Kotlin scripts. The first argument, which specifies the command or script to execute, is matched against Kotlin scripts through a search path created from multiple directories to well-known locations within a repository, project, or home directory.
 
-This framework also makes it easy to document and discover the commands that are available for a particular context determined by the current directory.
+This framework also makes it easy to document and discover the commands that are available for a particular context which is determined by the current directory.
 
 This document assumes the existence of a symlink or alias, named `ko`, that references this project's `ko.sh` shell script, and this will be used throughout this document.
 
@@ -25,6 +25,7 @@ This document assumes the existence of a symlink or alias, named `ko`, that refe
 - Documents available commands based on the current directory (context)
 - Provides a shortcut to create new or edit existing scripts
 - Runs specific scripts in a designated directory (i.e., the project directory)
+- A meta script, `ko.kts`, supports implementing several commands in one file
 
 ### Concepts
 
@@ -37,14 +38,6 @@ The search path is determined by constructing search roots based on the current 
 The default search roots include the module directory, project directory, repository directory, and home directory, searched in that order. The search dirs within these directories default to `bin` and `scripts`.
 
 In addition, the search path starts with the current directory and ends with the `scripts` located alongside the `ko` script.
-
-### Script files
-
-While kscript supports executing `.kt` files, this framework only calls scripts with the `.kts` extension. This allows for a clean separation of files intended to be invoked directly and those that implement shared functionality and can be included in other scripts using:
-
-```kotlin
-//INCLUDE util.kt
-```
 
 ### Getting Started
 
@@ -106,6 +99,12 @@ ko help <command>
 
 Detailed information will be output to the console when a command is matched against a script. Scripts that support the `--help` argument will output additional information.
 
+You can also list the commands defined in the current project:
+
+```bash
+ko help -p <command>
+```
+
 #### Creating a new script
 
 ```bash
@@ -140,7 +139,7 @@ Note: The kscript `DependsOn` annotation is supported, but each one must reside 
 
 ### Script conventions
 
-The framework defines two special comments that can be placed in your Kotlin scripts:
+The framework defines several special comments that can be placed in your Kotlin scripts:
 
 ```kotlin
 //DIR <dir-spec>
@@ -148,7 +147,7 @@ The framework defines two special comments that can be placed in your Kotlin scr
 
 The DIR comment specifies in which directory the script should be executed. If not present, scripts will be executed in the working directory.
 
-The _dir-spec_ supports an absolute path, a path relative to the home directory using the tilde notation, and variable substitution to an absolute path.
+The _dir-spec_ supports an absolute path, a path relative to the home directory using the tilde notation, and variable substitution to an absolute path using the dollar sign ($).
 
 For example, to always a particular script run in the project directory, add the `//DIR $KO_PROJECT` comment to your file.
 
@@ -160,9 +159,17 @@ Note: This only applies when executing the script with the `ko` script.
 
 The `//CMD` comment is used for documenting the available commands. If not present, the command name is taken from the script name and no description will be shown when the commands are listed.
 
-This comment is required for command resolution in `ko.kts` scripts, which support executing multiple commands as the command is passed as the first argument. These special scripts can also be located in search root directories.
+This comment is required for command resolution in `ko.kts` scripts, which support implementing multiple commands in a single file. For these scripts, the command is passed as the first argument. These special scripts can also be located in search root directories so creating a `scripts` subdirectory in your project is not necessary.
 
 The presence of a `//HELP` comment indicates the script supports being called with the `--help` argument to output usage information to the console. 
+
+### Script files
+
+While kscript supports executing `.kt` files, this framework only calls scripts with the `.kts` extension. This allows for a clean separation of files intended to be invoked directly and those that implement shared functionality and can be included in other scripts using a comment directive:
+
+```kotlin
+//INCLUDE util.kt
+```
 
 ### Configuration
 
@@ -195,14 +202,16 @@ These environment variables are available to your Kotlin script when called via 
 - `KO_MODULE` - the nearest directory representing a module, optional
 - `KO_PROJECT_FILE` - the primary build file used for the project
 
+The `Frameowrk` class in the scripting library provides convenient access to the runtime environment setup by the framework.
+
 ## Scripting Library
 
-NOTE: The scripting library has not yet been developed, so the functionality is severely limited at this early stage.
+NOTE: The scripting library has not yet been developed, so the functionality is limited at this early stage.
 
 Adding a dependency on the scripting library can be performed by adding the following preamble to your script file (using the appropriate version, of course):
 
 ```kotlin
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.0
 ```
 
 See the [kscript](https://github.com/holgerbrandl/kscript) project for more details.
@@ -234,13 +243,19 @@ Another goal of this library is to help reduce the number of dependencies and im
 
 ## Installation
 
-Installation is performed by cloning this repository and executing the `./install.sh` script. If you have Homebrew installed, any missing dependencies will also be installed (except Java).
+Installation is performed by cloning this repository and executing the `./install.sh` script. If you have Homebrew installed, any missing dependencies will also be installed (except Java). Development is done on the master branch, so you may want to checkout a released version.
+
+```bash
+git clone https://github.com/alphalon/kotlin-scripting
+git checkout tags/v0.1.0
+./install.sh
+```
 
 If the install script detects a $HOME/bin directory, it will create a symlink `ko` to the `ko.sh` file in this repository, assuming this will be added to your execution path.
 
 Alternatively, you can create an alias to this script, or copy the `ko.sh` file and `scripts` directory to any location on your executable path.
 
-The `./install.sh` script also builds the scripting library and installs it in your local maven repository for resolution by kscript. This script can be run whenever you make changes to the library sources so that they become available to your scripts. 
+The `./install.sh` script also builds the scripting library and installs it in your local maven repository for resolution by kscript. This script can be run whenever you make changes to the library sources so that they become available to your scripts through kscript dependency resolution.
 
 ## TODO
 
