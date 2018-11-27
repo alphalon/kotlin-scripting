@@ -102,7 +102,7 @@ Detailed information will be output to the console when a command is matched aga
 You can also list the commands defined in the current project:
 
 ```bash
-ko help -p <command>
+ko help -p
 ```
 
 #### Creating a new script
