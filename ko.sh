@@ -103,7 +103,7 @@ REPO_MARKERS=(".git" ".svn" ".hg" ".fslckout" "_FOSSIL_" ".bzr" "_darcs" "CVS" "
 add-to-array "REPO_MARKERS" "KO_ADDITIONAL_REPO_MARKERS"
 
 # Files marking project root directories
-PROJECT_MARKERS=("build.gradle" "build.gradle.kts" "project.clj" "pom.xml" "*.xcworkspace" "*.xcodeproj" "*.iml" "build.boot" "deps.clj" "build.xml" "Makefile" "CMakeLists.txt" "setup.py" "build.sbt" "package.json" "Gemfile" ".ko_project")
+PROJECT_MARKERS=("build.gradle" "build.gradle.kts" "project.clj" "pom.xml" "*.xcworkspace" "*.xcodeproj" "*.iml" "build.boot" "deps.clj" "build.xml" "Makefile" "CMakeLists.txt" "setup.py" "pipfile.lock" "requirements.txt" ".csproj" ".vbproj" ".nuspec" "build.sbt" "package.json" "Gemfile" "*.gemspec" ".ko_project")
 add-to-array "PROJECT_MARKERS" "KO_ADDITIONAL_PROJECT_MARKERS"
 
 # Files marking module directories

@@ -268,7 +268,7 @@ In addition, the `bin` directory contains automation scripts for this project.
 
 ## Diagnostics
 
-Run the `ko` script with the `--verbose` options to output information regarding the script runtime environment.
+Run the `ko` script with the `--verbose` option to output information regarding the script runtime environment.
 
 ## TODO
 
