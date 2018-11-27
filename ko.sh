@@ -99,7 +99,7 @@ function add-to-array {
 }
 
 # Files or directories marking the repository root directory
-REPO_MARKERS=(".git" ".svn" ".ko_repo")
+REPO_MARKERS=(".git" ".svn" ".hg" ".fslckout" "_FOSSIL_" ".bzr" "_darcs" "CVS" ".ko_repo")
 add-to-array "REPO_MARKERS" "KO_ADDITIONAL_REPO_MARKERS"
 
 # Files marking project root directories
