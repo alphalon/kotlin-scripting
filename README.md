@@ -137,7 +137,7 @@ Without any arguments, this command will upgrade your nearby scripts to the late
 
 Note: The kscript `DependsOn` annotation is supported, but each one must reside on a single line and contain only string literals.
 
-### Script conventions
+### Script Conventions
 
 The framework defines several special comments that can be placed in your Kotlin scripts:
 
@@ -179,6 +179,7 @@ While kscript supports executing `.kt` files, this framework only calls scripts 
 
 Several environment variables can be set to configure the behavior of the run script:
 
+- `KO_TEMPLATE` - name of the file to use for a template when creating new scripts
 - `KO_ADDITIONAL_SEARCH_ROOTS` - list of search root directories
 - `KO_ADDITIONAL_SEARCH_DIRS` - list of subdirectories below search roots to find scripts
 - `KO_ADDITIONAL_REPO_MARKERS` - additional markers used to locate the repository directory
@@ -190,6 +191,30 @@ All of these settings are multi-valued and use colons (:) as the delimiter.
 #### Special marker files
 
 The presence of the `.ko_repo`, `.ko_project`, and `.ko_module` files not only indicate their respective directories when determining the search roots, but can contain bash export commands to further configure the resolution process or provide additional environment variables for your running Kotlin scripts.
+
+### Script Templates
+
+The framework comes with a basic template used when creating new scripts. It simply adds comments for the command and a dependency on the scripting library. In situations you find yourself working on a project that typically requires a common set of dependencies for your Kotlin scripts, you may define your own template.
+
+You can start with the template contained in the `scripts` directory of this project and modify it to suit your needs.
+
+#### KO_TEMPLATE environment variable
+
+Setting the `KO_TEMPLATE` environment variable to the name of the template file is the most direct way to specify the template used when creating a script. Since script creation may occur from any directory, it's important to use an absolute path to the template file.
+
+Setting this environment variable in a file like `.ko_project` allows for context-sensitive templating. If your template is located within the project, it's helpful to use the `KO_PROJECT` environment variable like so:
+
+```bash
+export KO_TEMPLATE="$KO_PROJECT/scripts/custom-project-template"
+```
+
+This method also works for the `.ko_repo` and `.ko_module` files.
+
+#### .ko_template file
+
+Alternatively, you can store the template in a file named `.ko_template`. If the `KO_TEMPLATE` variable is not set (or does not resolve to a file), the `ko` script will look in the current working directory and then through the search roots.
+
+Placing a `.ko_template` file in your home directory provides a custom template for those contexts or projects that do not explicitly provide one.
 
 ### Runtime environment
 

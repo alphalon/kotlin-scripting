@@ -339,6 +339,23 @@ function get-dir-from-script {
   fi
 }
 
+# Tries to locate a template in the current directory and along the search roots
+function find-script-template {
+  if [[ -f .ko_template ]]; then
+    KO_TEMPLATE=".ko_template"
+    return
+  fi
+
+  # Check search roots
+  IFS=':' read -ra sr <<< "$KO_SEARCH_ROOTS"
+  for r in "${sr[@]}"; do
+    if [[ -f "$r/.ko_template" ]]; then
+      KO_TEMPLATE="$r/.ko_template"
+      return
+    fi
+  done
+}
+
 # Create a script in the nearest location on the search path
 # Args: command
 function create-script {
@@ -358,12 +375,20 @@ function create-script {
   local script="$dir/$1.kts"
 
   if [[ ! -e "$script" ]]; then
-    # Create new script file
-    if [[ ! -f "$KO_HOME/scripts/kts.template" ]]; then
+    # Locate script template
+    if [[ -z $KO_TEMPLATE ]]; then
+      find-script-template
+    fi
+    if [[ ! -f $KO_TEMPLATE ]]; then
+      KO_TEMPLATE="$KO_HOME/scripts/kts.template"
+    fi
+    if [[ ! -f $KO_TEMPLATE ]]; then
       echo "ERROR: unable to locate script template"
       exit 1
     fi
-    cp "$KO_HOME/scripts/kts.template" "$script"
+
+    # Create new script file
+    cp "$KO_TEMPLATE" "$script"
     if [[ -n $KO_PROJECT ]]; then
       sed -i .tmp "s:<project>:$(basename "$KO_PROJECT"):g" "$script"
     fi
