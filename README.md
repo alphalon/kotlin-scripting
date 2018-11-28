@@ -194,13 +194,13 @@ The presence of the `.ko_repo`, `.ko_project`, and `.ko_module` files not only i
 
 ### Script Templates
 
-The framework comes with a basic template used when creating new scripts. It simply adds comments for the command and a dependency on the scripting library. In situations you find yourself working on a project that typically requires a common set of dependencies for your Kotlin scripts, you may define your own template.
+The framework comes with a basic template used when creating new scripts. It simply adds comments for the command and a dependency on the scripting library. In situations you find yourself working on a project that typically requires a common set of dependencies for your Kotlin scripts, you may want to define your own template.
 
 You can start with the template contained in the `scripts` directory of this project and modify it to suit your needs.
 
-#### KO_TEMPLATE environment variable
+#### Configuring templates through the environment
 
-Setting the `KO_TEMPLATE` environment variable to the name of the template file is the most direct way to specify the template used when creating a script. Since script creation may occur from any directory, it's important to use an absolute path to the template file.
+Setting the `KO_TEMPLATE` environment variable to the name of the template file takes the highest precedence when resolving which template to use. Since script creation may occur from any directory, it's important to use an absolute path to the template file.
 
 Setting this environment variable in a file like `.ko_project` allows for context-sensitive templating. If your template is located within the project, it's helpful to use the `KO_PROJECT` environment variable like so:
 
@@ -210,9 +210,9 @@ export KO_TEMPLATE="$KO_PROJECT/scripts/custom-project-template"
 
 This method also works for the `.ko_repo` and `.ko_module` files.
 
-#### .ko_template file
+#### Creating special files for templates
 
-Alternatively, you can store the template in a file named `.ko_template`. If the `KO_TEMPLATE` variable is not set (or does not resolve to a file), the `ko` script will look in the current working directory and then through the search roots.
+Alternatively, you can store the template in a file named `.ko_template`. If the `KO_TEMPLATE` variable is not set (or does not resolve to a file), the `ko` script will look in the current working directory and then through the search roots to find a suitable template. If one is not found, the standard template will be used.
 
 Placing a `.ko_template` file in your home directory provides a custom template for those contexts or projects that do not explicitly provide one.
 
@@ -283,6 +283,8 @@ git checkout tags/v0.1.0
 If the install script detects a $HOME/bin directory, it will create a symlink `ko` to the `ko.sh` file in this repository, assuming this will be added to your execution path.
 
 Alternatively, you can create an alias to this script, or copy the `ko.sh` file and `scripts` directory to any location on your executable path.
+
+Bash completion is also supported though the `ko-completion.sh` script. This will be symlinked into the /usr/local/etc/bash_completion.d directory if it exists.
 
 The `./install.sh` script also builds the scripting library and installs it in your local maven repository for resolution by kscript. This script can be run whenever you make changes to the library sources so that they become available to your scripts through kscript dependency resolution.
 

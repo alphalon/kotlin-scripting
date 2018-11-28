@@ -70,6 +70,13 @@ if [[ -d "$HOME/bin" ]]; then
   fi
 fi
 
+# Configure bash completions
+if [[ -d "/usr/local/etc/bash_completion.d" ]]; then
+   if [[ ! -e "/usr/local/etc/bash_completion.d/ko-completion.sh" ]]; then
+     ln -s "$(realpath ko-completion.sh)" "/usr/local/etc/bash_completion.d/ko-completion.sh"
+   fi
+fi
+
 # Build project library and install in local maven repository
 ./gradlew publishToMavenLocal
 

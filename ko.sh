@@ -21,13 +21,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO: implement bash completion!
-# https://askubuntu.com/questions/68175/how-to-create-script-with-auto-complete
-# symlink to /usr/local/etc/bash_completion.d
-
 # NOTE: Reserve options for -r, -p, and -m. These may be used for scoping
 # operations to the repository, project, or module in the future.
 
+# Keep documented options in sync with ko-completion.sh
 if [[ -z $1 || $1 == "-h" || $1 == "--help" ]]; then
   echo "Usage:"
   echo "  ko [options...] <command> [args...]"
@@ -59,6 +56,7 @@ while [[ -n $1 && $1 == -* ]]; do
   "-v" | "--version") PRINT_VERSION=1; shift;;
   "--verbose") VERBOSE=1; shift;;
   "--debug") DEBUG=1; shift;;
+  "--completion") COMPLETION=1; shift;;
   *) echo "Ignoring unknown option: $1"; shift;;
   esac
 done
@@ -248,7 +246,25 @@ function find-script {
       local path=$(echo $f | sed 's,//,/,g')
       local filename=$(basename "$f")
       local name="${filename%.*}"
-      SCRIPTS+=("$name|$path")
+
+      # Look for matching command to get proper case
+      local found=0
+      local cmds=($(sed -n '/^\/\/CMD / s/\/\/CMD //p' "$path" | awk '{print $1;}'))
+      shopt -s nocasematch
+      for cmd in "${cmds[@]}"; do
+        if [[ $cmd == $name ]]; then
+          # echo "Matched command $cmd in script $2"
+          SCRIPTS+=("$cmd|$path")
+          found=1
+          break
+        fi
+      done
+      shopt -u nocasematch
+
+      # Use script name if command was not found
+      if [[ $found -eq 0 ]]; then
+        SCRIPTS+=("$name|$path")
+      fi
     done
   fi
 }
@@ -463,7 +479,7 @@ if [[ $VERBOSE -gt 0 ]]; then
 fi
 
 COMMAND=$1
-if [[ -z $COMMAND ]]; then
+if [[ -z $COMMAND  && $COMPLETION -eq 0 ]]; then
   if [[ $VERBOSE -eq 0 ]]; then
     echo "ERROR: the command parameter has not been specified"
     exit 1
@@ -496,6 +512,18 @@ if [[ $DEBUG -gt 0 ]]; then
     IFS='|' read -ra PARSED <<< "$s"
     printf "%-23s %s\n" "${PARSED[0]}" "${PARSED[1]}"
   done
+fi
+
+# Return completions
+if [[ $COMPLETION -gt 0 ]]; then
+  for s in "${SCRIPTS[@]}"; do
+    IFS='|' read -ra PARSED <<< "$s"
+    CMD="${PARSED[0]}"
+    if [[ ! $CMD = *.gradle ]]; then
+      echo "$CMD"
+    fi
+  done
+  exit
 fi
 
 # Check to make sure we only found one script
