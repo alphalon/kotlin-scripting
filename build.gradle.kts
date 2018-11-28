@@ -1,5 +1,7 @@
 // Project: kotlin-scripting
 
+import org.jetbrains.dokka.gradle.DokkaTask
+
 group = "io.alphalon.kotlin"
 version = "0.1.1-SNAPSHOT"
 
@@ -10,6 +12,19 @@ object Versions {
 plugins {
     kotlin("jvm") version "1.3.10"
     id("maven-publish")
+}
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.9.17")
+    }
+}
+
+apply {
+    plugin("org.jetbrains.dokka")
 }
 
 // Add scripts to test sources for code completion
@@ -56,7 +71,7 @@ val printTestResult: KotlinClosure2<TestDescriptor, TestResult, Void>
         // Match top-level suite
         if (desc.parent == null)
             println("Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)")
-        
+
         null
     })
 
@@ -90,4 +105,8 @@ publishing {
             artifact(tasks["sourcesJar"])
         }
     }
+}
+
+tasks.withType<DokkaTask> {
+    jdkVersion = 8
 }
