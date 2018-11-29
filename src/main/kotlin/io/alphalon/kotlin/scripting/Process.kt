@@ -116,6 +116,38 @@ fun exec(command: List<String>, workingDir: File? = null, console: Boolean = tru
 }
 
 /**
+ * Executes the [command], waiting for the process to finish.
+ *
+ * @param command A list containing the command and its arguments
+ * @param workingDir The directory to execute the command, defaults to the current working directory
+ * @param console Whether to redirect the standard output to the console
+ * @param waitForMinutes The timeout value for the process to terminate
+ * @return The Java [Process]
+ */
+fun exec(vararg command: String, workingDir: File? = null, console: Boolean = true, waitForMinutes: Long = 60): Process {
+    val builder = ProcessBuilder(*command).apply {
+        workingDir?.let { directory(it) }
+
+        if (console)
+            redirectOutput(ProcessBuilder.Redirect.INHERIT)
+
+        redirectError(ProcessBuilder.Redirect.INHERIT)
+    }
+
+    try {
+        return builder.start().apply {
+            try {
+                waitFor(waitForMinutes, TimeUnit.MINUTES)
+            } catch (e: InterruptedException) {
+                warning("the process (${command.first()}) is taking longer than $waitForMinutes minutes")
+            }
+        }
+    } catch (e: IOException) {
+        error(e.message.toString())
+    }
+}
+
+/**
  * Executes the [commandLine], waiting for the process to finish.
  *
  * @param commandLine A string containing the command and its arguments

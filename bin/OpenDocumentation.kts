@@ -17,6 +17,6 @@ project.exec("dokka").fail()
 
 val index = File(Framework.projectDir, "build/dokka/scripting/io.alphalon.kotlin.scripting/index.html")
 if (index.exists())
-    exec("open $index")
+    exec("open", index.absolutePath)
 else
     error("The documentation was not generated")

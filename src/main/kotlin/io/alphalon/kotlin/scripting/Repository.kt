@@ -32,7 +32,7 @@ import kotlin.streams.toList
 open class Repository(val file: File)
 
 /**
- * Represents Git repositories.
+ * Provides operations on Git repositories.
  */
 open class GitRepository(dir: File) : Repository(dir) {
 
@@ -43,26 +43,32 @@ open class GitRepository(dir: File) : Repository(dir) {
             .toList()
 
     /**
-     * Returns whether there are new or modified files in the repository.
+     * Returns whether there are uncommitted changes in the repository.
+     *
+     * @return True, if the repository is dirty
      */
     fun isDirty(): Boolean =
         execOutput("git status --porcelain").toList().isNotEmpty()
 
     /**
-     * Returns a list of modified and tracked files that needs to be added to
+     * Returns a list of modified and tracked files that need to be added to
      * the index.
+     *
+     * @return The list of changes files
      */
     fun changedFiles(): List<File> = statusFiles { it[1] == 'M' }
 
     /**
      * Returns a list of untracked files.
+     *
+     * @return The list of files that have not been added
      */
     fun newFiles(): List<File> = statusFiles { it.startsWith("?? ") }
 
     /**
      * Returns whether changes are detected in the repository.
      *
-     * @return True, whether changes are detected or changes cannot be detected
+     * @return True, if there are tracked and modified files
      */
     fun hasChanges(): Boolean =
         changedFiles().isNotEmpty()
@@ -74,7 +80,7 @@ open class GitRepository(dir: File) : Repository(dir) {
      * @return The Java [Process]
      */
     fun add(file: File): Process =
-        exec(listOf("git", "add", file.absolutePath))
+        exec("git", "add", file.absolutePath)
 
     /**
      * Commits the files added to the index with the provided [message].
@@ -83,7 +89,7 @@ open class GitRepository(dir: File) : Repository(dir) {
      * @return The Java [Process]
      */
     fun commit(message: String): Process =
-        exec(listOf("git", "commit", "-m", message))
+        exec("git", "commit", "-m", message)
 
     /**
      * Creates a new tag or moves an existing tag with the same name.
@@ -91,7 +97,7 @@ open class GitRepository(dir: File) : Repository(dir) {
      * @return a Java [Process]
      */
     fun tag(tag: String): Process =
-        exec(listOf("git", "tag", "-f", tag))
+        exec("git", "tag", "-f", tag)
 }
 
 internal fun repo(file: File): Repository =
