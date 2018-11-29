@@ -25,6 +25,39 @@ import java.util.stream.Stream
 import kotlin.streams.toList
 
 /**
+ * Combines the lines into a single text.
+ *
+ * Each line will be terminated by the platform line separator.
+ *
+ * @return The combined text
+ */
+fun Iterable<String>.text(): String {
+    return joinToString(System.lineSeparator(), postfix = System.lineSeparator())
+}
+
+/**
+ * Combines the lines into a single text.
+ *
+ * Each line will be terminated by the platform line separator.
+ *
+ * @return The combined text
+ */
+fun Sequence<String>.text(): String {
+    return joinToString(System.lineSeparator(), postfix = System.lineSeparator())
+}
+
+/**
+ * Combines the lines into a single text.
+ *
+ * Each line will be terminated by the platform line separator.
+ *
+ * @return The combined text
+ */
+fun Stream<String>.text(): String {
+    return toList().joinToString(System.lineSeparator(), postfix = System.lineSeparator())
+}
+
+/**
  * Returns the lines matching the [regex].
  *
  * By default, returns the entire line. A group value of 0 returns just the

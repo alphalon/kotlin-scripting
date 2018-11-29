@@ -142,7 +142,7 @@ fun File.replace(regex: Regex, group: Int = 0, replacement: String): Boolean {
     val changed = newLines != lines
 
     if (changed)
-        writeText(newLines.joinToString(System.lineSeparator(), postfix = System.lineSeparator()))
+        writeText(newLines.text())
 
     return changed
 }
@@ -160,7 +160,7 @@ fun File.replace(match: String, replacement: String): Boolean {
     val changed = newLines != lines
 
     if (changed)
-        writeText(newLines.joinToString(System.lineSeparator(), postfix = System.lineSeparator()))
+        writeText(newLines.text())
 
     return changed
 }
