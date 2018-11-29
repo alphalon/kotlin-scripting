@@ -7,7 +7,7 @@
 //CMD updateVersion - Updates the project to a new version
 //HELP
 
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.1-SNAPSHOT
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.1
 
 import io.alphalon.kotlin.scripting.*
 import java.io.File
@@ -65,3 +65,6 @@ if (!newVersion.endsWith("-SNAPSHOT")) {
     readme.replace(Regex("""kotlin-scripting:([\d.]*)"""), 1, newVersion)
     readme.replace(Regex("""tags/v([\d.]*)"""), 1, newVersion)
 }
+
+// Publish new version so scripts resolve
+exec("./install.sh").fail()

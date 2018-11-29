@@ -105,6 +105,8 @@ You can also list the commands defined in the current project:
 ko help -p
 ```
 
+Pro Tip: `alias kl='ko help -p'`
+
 #### Creating a new script
 
 ```bash
@@ -240,7 +242,7 @@ NOTE: The scripting library has not yet been developed, so the functionality is 
 Adding a dependency on the scripting library can be performed by adding the following preamble to your script file (using the appropriate version, of course):
 
 ```kotlin
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.0
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.1
 ```
 
 See the [kscript](https://github.com/holgerbrandl/kscript) project for more details.
@@ -276,7 +278,7 @@ Installation is performed by cloning this repository and executing the `./instal
 
 ```bash
 git clone https://github.com/alphalon/kotlin-scripting
-git checkout tags/v0.1.0
+git checkout tags/v0.1.1
 ./install.sh
 ```
 

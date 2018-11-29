@@ -50,8 +50,8 @@ open class GitRepository(dir: File) : Repository(dir) {
     }
 }
 
-internal fun repo(dir: File): Repository =
-    when {
-        File(dir, ".git").exists() -> GitRepository(dir)
-        else -> Repository(dir)
+internal fun repo(file: File): Repository =
+    when (file.name) {
+        ".git" -> GitRepository(file)
+        else -> Repository(file)
     }

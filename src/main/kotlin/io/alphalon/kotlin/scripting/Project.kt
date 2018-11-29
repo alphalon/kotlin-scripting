@@ -68,8 +68,8 @@ open class GradleProject(file: File) : Project(file) {
     override val version: String?
         get() = execOutput("$cmd properties").grep(Regex("""^version: (.*)"""), 1).firstOrNull()
 
-    override fun clean() = exec("$cmd clean").exitValue() == 0
-    override fun test() = exec("$cmd test").exitValue() == 0
+    override fun clean() = exec("clean").exitValue() == 0
+    override fun test() = exec("test").exitValue() == 0
     override fun exec(vararg args: String) = exec(listOf(cmd) + args)
 }
 
