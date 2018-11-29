@@ -242,7 +242,7 @@ NOTE: The scripting library has not yet been developed, so the functionality is 
 Adding a dependency on the scripting library can be performed by adding the following preamble to your script file (using the appropriate version, of course):
 
 ```kotlin
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.1
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.2
 ```
 
 See the [kscript](https://github.com/holgerbrandl/kscript) project for more details.
@@ -278,7 +278,7 @@ Installation is performed by cloning this repository and executing the `./instal
 
 ```bash
 git clone https://github.com/alphalon/kotlin-scripting
-git checkout tags/v0.1.1
+git checkout tags/v0.1.2
 ./install.sh
 ```
 
