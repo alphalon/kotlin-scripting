@@ -48,6 +48,19 @@ fun exit(exitCode: Int = 0): Nothing {
 }
 
 /**
+ * Echoes the [message] to the console and terminates the script with the
+ * [exitCode].
+ *
+ * @param message The message to echo
+ * @param exitCode The code returned to the calling process
+ * @return This function never returns
+ */
+fun exit(message: String, exitCode: Int = 0): Nothing {
+    echo(message)
+    exitProcess(exitCode)
+}
+
+/**
  * For a non-zero exit code, executes the [block] and terminates the process.
  *
  * Does nothing when the [Process] completes successfully.

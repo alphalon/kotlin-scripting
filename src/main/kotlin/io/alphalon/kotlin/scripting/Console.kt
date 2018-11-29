@@ -38,8 +38,7 @@ internal fun errorMessage(message: String) = "ERROR: ${message.decapitalize()}"
  * @return This function does not return
  */
 fun echoUsage(usage: String) {
-    echo(usage.trimIndent())
-    exit()
+    exit(usage.trimIndent())
 }
 
 /**
@@ -101,8 +100,7 @@ fun warning(message: String) {
  */
 fun error(message: String, exitCode: Int = 1): Nothing {
     quietMode = false
-    echo(errorMessage(message))
-    exit(exitCode)
+    exit(errorMessage(message), exitCode)
 }
 
 /**

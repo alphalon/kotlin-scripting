@@ -66,7 +66,7 @@ if (printHelp)
 
 // Validate arguments
 if (library.split(":").count() != 2)
-    error("the library must specify groupId:artifactId (not $library)")
+    error("The library must specify groupId:artifactId (not $library)")
 
 // Scope results
 val scope = try {
@@ -77,7 +77,7 @@ val scope = try {
         else -> null
     }
 } catch (e: RuntimeException) {
-    error("could not find ${e.message} scope")
+    error("Could not find ${e.message} scope")
 }
 
 fun findDependencies(scripts: List<File>, library: String, version: String) = scripts.flatMap { script ->
@@ -98,10 +98,8 @@ else
 
 // Find scripts to needing the version change
 val upgradable = findDependencies(scripts, library, version)
-if (upgradable.isEmpty()) {
-    echo("Could not find any scripts to upgrade")
-    exit()
-}
+if (upgradable.isEmpty())
+    exit("Could not find any scripts to upgrade")
 
 echoSeparator()
 if (dryRun) {
