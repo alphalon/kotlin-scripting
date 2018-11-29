@@ -6,6 +6,7 @@
 //DIR $KO_PROJECT
 //CMD publish - Publishes the project after running tests successfully
 
+//COMPILER_OPTS -jvm-target 1.8
 //DEPS io.alphalon.kotlin:kotlin-scripting:0.1.2-SNAPSHOT
 
 import io.alphalon.kotlin.scripting.*

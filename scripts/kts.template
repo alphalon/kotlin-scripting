@@ -6,6 +6,7 @@
 //DIR $PWD
 //CMD <command> - Enter short description here
 
+//COMPILER_OPTS -jvm-target 1.8
 //DEPS io.alphalon.kotlin:kotlin-scripting:<version>
 
 import io.alphalon.kotlin.scripting.*
