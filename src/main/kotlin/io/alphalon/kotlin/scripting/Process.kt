@@ -30,6 +30,8 @@ import kotlin.system.exitProcess
 /**
  * Returns the value of the environment variable, which may be overridden by a
  * Java property of the same name.
+ *
+ * @param name The name of the environment variable.
  */
 fun env(name: String): String? {
     return System.getProperty(name) ?: System.getenv(name)
@@ -37,6 +39,9 @@ fun env(name: String): String? {
 
 /**
  * Immediately exits the script with the [exitCode].
+ *
+ * @param exitCode The code returned to the calling process
+ * @return This function never returns
  */
 fun exit(exitCode: Int = 0): Nothing {
     exitProcess(exitCode)
@@ -46,17 +51,23 @@ fun exit(exitCode: Int = 0): Nothing {
  * For a non-zero exit code, executes the [block] and terminates the process.
  *
  * Does nothing when the [Process] completes successfully.
+ *
+ * @param message A console message to echo in case of failure
+ * @param block A action to take before termination
  */
-fun Process.fail(block: (() -> Unit)? = null) {
+fun Process.fail(message: String? = null, block: (() -> Unit)? = null) {
     try {
         when {
             exitValue() > 0 -> {
+                if (message != null)
+                    echo(errorMessage(message))
+
                 block?.invoke()
                 exit(exitValue())
             }
         }
     } catch (e: IllegalThreadStateException) {
-        error("the process has not terminated")
+        error("The process has not terminated")
     }
 }
 
@@ -77,7 +88,7 @@ private fun parseCommandLine(commandLine: String): List<String> {
  *
  * @param command A list containing the command and its arguments
  * @param workingDir The directory to execute the command, defaults to the current working directory
- * @param console Whether to redirect the process's output to the console
+ * @param console Whether to redirect the standard output to the console
  * @param waitForMinutes The timeout value for the process to terminate
  * @return The Java [Process]
  */
@@ -85,10 +96,10 @@ fun exec(command: List<String>, workingDir: File? = null, console: Boolean = tru
     val builder = ProcessBuilder(command).apply {
         workingDir?.let { directory(it) }
 
-        if (console) {
+        if (console)
             redirectOutput(ProcessBuilder.Redirect.INHERIT)
-            redirectError(ProcessBuilder.Redirect.INHERIT)
-        }
+
+        redirectError(ProcessBuilder.Redirect.INHERIT)
     }
 
     try {
