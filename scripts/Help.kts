@@ -66,7 +66,7 @@ val top = try {
         else -> null
     }
 } catch (e: RuntimeException) {
-    error("could not find ${e.message} scope")
+    error("Could not find ${e.message} scope")
 }
 
 echo("Kotlin Scripting Library ${Framework.libraryVersion}")
