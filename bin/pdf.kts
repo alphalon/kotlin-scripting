@@ -7,7 +7,7 @@
 //CMD  pdf Generates a PDF from the project README.md file
 
 //COMPILER_OPTS -jvm-target 1.8
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.2
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.3-SNAPSHOT
 
 import io.alphalon.kotlin.scripting.*
 

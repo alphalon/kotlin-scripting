@@ -3,7 +3,7 @@
 import org.jetbrains.dokka.gradle.DokkaTask
 
 group = "io.alphalon.kotlin"
-version = "0.1.2"
+version = "0.1.3-SNAPSHOT"
 
 object Versions {
     const val kotlinCoroutines = "1.0.1"
