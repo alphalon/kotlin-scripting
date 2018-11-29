@@ -27,6 +27,9 @@ private var output = false
 private var quietMode = false
 private val capturedTable: MutableList<List<String>> = mutableListOf()
 
+internal fun warningMessage(message: String) = "WARNING: ${message.decapitalize()}"
+internal fun errorMessage(message: String) = "ERROR: ${message.decapitalize()}"
+
 /**
  * Outputs usage information and terminates the script. The indent will be
  * trimmed from the string.
@@ -86,7 +89,7 @@ fun echoSeparator() {
 fun warning(message: String) {
     val wasQuiet = quietMode
     quietMode = false
-    echo("WARNING: $message")
+    echo(warningMessage(message))
     quietMode = wasQuiet
 }
 
@@ -98,7 +101,7 @@ fun warning(message: String) {
  */
 fun error(message: String, exitCode: Int = 1): Nothing {
     quietMode = false
-    echo("ERROR: $message")
+    echo(errorMessage(message))
     exit(exitCode)
 }
 
