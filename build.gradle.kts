@@ -31,6 +31,7 @@ apply {
 sourceSets {
     test {
         java {
+            srcDir("bin")
             srcDir("scripts")
         }
     }

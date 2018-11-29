@@ -40,32 +40,28 @@ val scopeProject = options.hasFlag("-p", "--project")
 val scopeModule = options.hasFlag("-m", "--module")
 
 // Print usage and exit
-if (printHelp) {
-    val usage = """
+if (printHelp)
+    echoUsage("""
         Usage:
           help [options...] [command]
 
-        Prints a list of available commands or detailed information about a specific
+        Outputs a list of available commands or detailed information about a specific
         command.
 
         Options:
           -f, --find       Prints the path of the script associated with the commands
-          -r, --repo       Limits the output to the repository
-          -p, --project    Limits the output to the project
-          -m, --module     Limits the output to the module
+          -r, --repo       Scopes the commands to the repository
+          -p, --project    Scopes the commands to the project
+          -m, --module     Scopes the commands to the module
           -v, --verbose    Prints the discovered directories
-    """.trimIndent()
-
-    echo(usage)
-    exit()
-}
+    """)
 
 // Scope results
 val top = try {
     when {
-        scopeRepo -> Framework.repo ?: throw RuntimeException("repository")
-        scopeProject -> Framework.project ?: throw RuntimeException("project")
-        scopeModule -> Framework.module ?: throw RuntimeException("module")
+        scopeRepo -> Framework.repoDir ?: throw RuntimeException("repository")
+        scopeProject -> Framework.projectDir ?: throw RuntimeException("project")
+        scopeModule -> Framework.moduleDir ?: throw RuntimeException("module")
         else -> null
     }
 } catch (e: RuntimeException) {
@@ -77,9 +73,9 @@ echo("Kotlin Scripting Library ${Framework.libraryVersion}")
 // Output related directories
 if (printDirectories) {
     echoSeparator()
-    Framework.repo?.let { addTableRow("Repository:", it.absolutePath) }
-    Framework.project?.let { addTableRow("Project:", it.absolutePath) }
-    Framework.module?.let { addTableRow("Module:", it.absolutePath) }
+    Framework.repoDir?.let { addTableRow("Repository:", it.absolutePath) }
+    Framework.projectDir?.let { addTableRow("Project:", it.absolutePath) }
+    Framework.moduleDir?.let { addTableRow("Module:", it.absolutePath) }
     echoTable()
 }
 
@@ -99,10 +95,8 @@ if (arguments.isNotEmpty()) {
             runScript(command, "--help")
         else
             echo(command.description)
-    } else {
-        echo("Could not find help for a command matching '$name'")
-        exit(1)
-    }
+    } else
+        error("Could not find help for a command matching '$name'")
 } else {
     // List available commands
     val commands = availableCommands(top)
@@ -112,8 +106,6 @@ if (arguments.isNotEmpty()) {
             addTableRow(it.name, if (printPath) it.script.absolutePath else it.description)
         }
         echoTable()
-    } else {
-        echo("Unable to locate any commands for this context")
-        exit(1)
-    }
+    } else
+        error("Unable to locate any commands for this context")
 }

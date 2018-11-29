@@ -33,8 +33,8 @@ import kotlin.streams.toList
 private fun kotlinFile(name: String) = name.endsWith(".kts") || name.endsWith(".kt")
 
 /**
- * Returns information about the currently running script called from the `ko`
- * shell script.
+ * Returns information about the currently running script when called from the
+ * `ko.sh` shell script.
  */
 object Framework {
 
@@ -51,20 +51,29 @@ object Framework {
     /**
      * Represents the repository root directory, may be null.
      */
-    val repo: File? by lazy { env("KO_REPO")?.let { File(it) } }
+    val repoDir: File? by lazy { env("KO_REPO")?.let { File(it) } }
 
     /**
-     * Represents the top-most project directory with a repository or a user's
-     * home directory. If no project was found, the current working directory is
-     * used as a substitute.
+     * Represents the top-most project directory within a repository or the
+     * home directory.
      */
-    val project: File? by lazy { env("KO_PROJECT")?.let { File(it) } }
+    val projectDir: File? by lazy { env("KO_PROJECT")?.let { File(it) } }
 
     /**
      * The module directory closest to the current working directory. Defaults
      * to the project directory if a module was not found.
      */
-    val module: File? by lazy { env("KO_MODULE")?.let { File(it) } }
+    val moduleDir: File? by lazy { env("KO_MODULE")?.let { File(it) } }
+
+    /**
+     * Returns the [Repository] associated with the repo marker file.
+     */
+    val repo: Repository? by lazy { env("KO_REPO_FILE")?.let { repo(File(it)) } }
+
+    /**
+     * Returns the [Project] associated with the project marker file.
+     */
+    val project: Project? by lazy { env("KO_PROJECT_FILE")?.let { project(File(it)) } }
 
     /**
      * Returns a collection of files and directories used to search for commands.
@@ -76,22 +85,22 @@ object Framework {
     }
 
     /**
-     * The version of the scripting framework currently being used. Returns an
-     * empty string if the version could not be determined or the script was
-     * not called from the `ko` shell script.
+     * The version of the scripting framework currently being used.
+     *
+     * Returns an empty string if the version could not be determined or the
+     * script was not called from the `ko` shell script.
      */
     val frameworkVersion: String by lazy { env("KO_VERSION") ?: "" }
 
     /**
-     * The version of the scripting library currently being used. Returns an
-     * empty string if the version could not be determined.
+     * The version of the scripting library currently being used.
+     *
+     * Returns an empty string if the version could not be determined.
      */
-    val libraryVersion: String by lazy {
-        this.javaClass.`package`.implementationVersion ?: ""
-    }
+    val libraryVersion: String by lazy { this.javaClass.`package`.implementationVersion ?: "" }
 
     /**
-     * Exits the script if it was not called via ko.sh.
+     * Exits the script if it was not called via the `ko.sh` shell script.
      */
     fun require() {
         if (script == null)
@@ -99,10 +108,20 @@ object Framework {
     }
 }
 
+/**
+ * Represents a command found on the search path.
+ *
+ * @property name The command name found inside the script or derived from the script filename
+ * @property description The command description found inside the script, may be empty
+ * @property script The script file
+ */
 data class Command(val name: String, val description: String, val script: File)
 
 /**
  * Returns the commands listed in a script [file].
+ *
+ * @param file The script file
+ * @return The commands found in the script, may be empty
  */
 fun commandsInFile(file: File): List<Command> =
     file.bufferedReader().useLines { lines ->
@@ -116,6 +135,12 @@ fun commandsInFile(file: File): List<Command> =
 
 /**
  * Returns the commands stored in the [directory].
+ *
+ * This function does not return commands found in the `ko.kts` file which are
+ * normally returned by the [commandsInFile] function.
+ *
+ * @param directory The directory to search
+ * @return The commands found in the directory
  */
 fun commandsInDirectory(directory: File): List<Command> = directory
     .listFiles { _, name -> name.endsWith(".kts") }
@@ -130,11 +155,16 @@ fun commandsInDirectory(directory: File): List<Command> = directory
 
 /**
  * Returns a list of available commands based on the
- * [search path][Framework.searchPath]. The list may be empty if the search path
- * could not be determined or no scripts could be found.
+ * [search path][Framework.searchPath].
+ *
+ * The list may be empty if the search path could not be determined or no
+ * scripts could be found.
  *
  * If supplied, the commands must reside within the [ancestor] directory or any
  * of its descendants.
+ *
+ * @param ancestor The topmost directory to search
+ * @return The commands found
  */
 fun availableCommands(ancestor: File? = null): List<Command> =
     Framework.searchPath?.let { path ->
@@ -151,6 +181,9 @@ fun availableCommands(ancestor: File? = null): List<Command> =
 /**
  * Returns whether the specified [command] supports the --help option to print
  * usage information.
+ *
+ * @param command The command to query
+ * @return True, if the command supports the --help option
  */
 fun commandProvidesHelp(command: Command): Boolean =
     command.script.bufferedReader().useLines { lines ->
@@ -159,8 +192,14 @@ fun commandProvidesHelp(command: Command): Boolean =
     }
 
 /**
- * Returns the first command that matches the [name]. If an [ancestor] directory
- * is provided, the search will be limited to its descendants.
+ * Returns the first command that matches the [name].
+ *
+ * If an [ancestor] directory is provided, the search will be limited to its
+ * descendants.
+ *
+ * @param name The partial or complete command name to match
+ * @param ancestor The topmost directory to search
+ * @return The [Command] if a match was made within or below the [ancestor] directory
  */
 fun searchForCommand(name: String, ancestor: File? = null): Command? {
     val commands = availableCommands(ancestor).filter { it.name.startsWith(name, ignoreCase = true) }
@@ -187,10 +226,17 @@ fun searchForCommand(name: String, ancestor: File? = null): Command? {
 }
 
 /**
- * Runs the script represented by the [command] name in an external process,
- * returning its process.
+ * Runs the script represented by the [command] name in an external process.
+ *
+ * The script must be run in an external process since it may require a
+ * different classpath or run directory. This has the benefit of providing
+ * process isolation.
+ *
+ * @param command The partial or complete command name to match
+ * @param args The arguments to pass to the script
+ * @return The Java [Process]
  */
-fun runScript(command: String, vararg args: String): Process? {
+fun runScript(command: String, vararg args: String): Process {
     val cmd = listOf("ko", command) + args
     return exec(cmd)
 }
@@ -198,14 +244,25 @@ fun runScript(command: String, vararg args: String): Process? {
 /**
  * Runs the script represented by the [command] in an external process,
  * returning its process.
+ *
+ * The script must be run in an external process since it may require a
+ * different classpath or run directory. This has the benefit of providing
+ * process isolation.
+ *
+ * @param command The [Command] representing the script to execute
+ * @param args The arguments to pass to the script
+ * @return The Java [Process]
  */
 fun runScript(command: Command, vararg args: String) = runScript(command.name, *args)
 
 /**
  * Finds all scripts located in the specified or current [directory] and the
  * immediate search directories.
+ *
+ * @param directory The directory and parent to search, defaults to the current working directory
+ * @return The found script files
  */
-fun findNearbyScripts(directory: File = File(System.getProperty("user.dir"))): List<File> {
+fun findNearbyScripts(directory: File = pwd()): List<File> {
     val dirs = listOf(directory) + System.getenv("KO_SEARCH_DIRS").split(":").map { File(directory, it) }
     return dirs.fold(listOf()) { scripts, dir ->
         val found = dir.listFiles { file -> file.isFile && kotlinFile(file.name) }
@@ -215,6 +272,9 @@ fun findNearbyScripts(directory: File = File(System.getProperty("user.dir"))): L
 
 /**
  * Finds all the Kotlin source and scripts below the [scope] directory.
+ *
+ * @param scope The ancestor directory to search
+ * @return The found script files
  */
 fun findAllScriptsWithinScope(scope: File): List<File> {
     return Files.find(Paths.get(scope.absolutePath), 100, BiPredicate { path, _ ->
@@ -224,16 +284,32 @@ fun findAllScriptsWithinScope(scope: File): List<File> {
 
 /**
  * Represents a single declared dependency in a script.
+ *
+ * @property script The script file
+ * @property group The Maven groupId
+ * @property artifact The Maven artifactId
+ * @property version The Maven version
  */
 data class Dependency(val script: File, val group: String, val artifact: String, val version: String) {
+
+    /**
+     * The group:artifact string representing a library.
+     */
     val library
         get() = "$group:$artifact"
+
+    /**
+     * The group:artifact:version string representing an instance of a library.
+     */
     val spec
         get() = "$group:$artifact:$version"
 }
 
 /**
- * Returns the dependencies declares in the [script] file.
+ * Returns the dependencies declared in the [script] file.
+ *
+ * @param script The script file
+ * @return The dependencies declared in the script
  */
 fun findScriptDependencies(script: File): List<Dependency> {
     val regex = Regex("""^\s*//DEPS\s*(.*)|^\s*@file:DependsOn\((.*)\)""")

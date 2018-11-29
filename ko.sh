@@ -27,7 +27,7 @@
 # Keep documented options in sync with ko-completion.sh
 if [[ -z $1 || $1 == "-h" || $1 == "--help" ]]; then
   echo "Usage:"
-  echo "  ko [options...] <command> [args...]"
+  echo "  ko [options...] command [args...]"
   echo
   echo "The command can be an abbreviation for matching the script to execute,"
   echo "while the args are passed on to that script."
@@ -121,6 +121,7 @@ function find-repository {
       # echo "Checking for marker $marker"
       if [[ -e "$dir/$marker" ]]; then
         export KO_REPO="$dir"
+        export KO_REPO_FILE="$dir/$marker"
         # echo "Found repository at $KO_REPO"
         if [[ -f "$dir/.ko_repo" ]]; then
           source "$dir/.ko_repo"

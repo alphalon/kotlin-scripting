@@ -28,7 +28,24 @@ private var quietMode = false
 private val capturedTable: MutableList<List<String>> = mutableListOf()
 
 /**
+ * Outputs usage information and terminates the script. The indent will be
+ * trimmed from the string.
+ *
+ * @param usage The usage text
+ * @return This function does not return
+ */
+fun echoUsage(usage: String) {
+    echo(usage.trimIndent())
+    exit()
+}
+
+/**
  * Enables or disabled quiet mode.
+ *
+ * Normal output will not be echoed to the console when quiet mode is enabled,
+ * however warnings and errors will always be echoed.
+ *
+ * @param quiet Whether to enable quiet mode
  */
 fun setQuietMode(quiet: Boolean) {
     quietMode = quiet
@@ -36,11 +53,13 @@ fun setQuietMode(quiet: Boolean) {
 
 /**
  * Outputs a line to the console.
+ *
+ * @param message The text to output to the console
  */
-fun echo(str: String? = null) {
+fun echo(message: String? = null) {
     if (!quietMode) {
-        if (str != null) {
-            println(str)
+        if (message != null && message.isNotBlank()) {
+            println(message)
             output = true
         } else {
             println()
@@ -50,7 +69,19 @@ fun echo(str: String? = null) {
 }
 
 /**
+ * Outputs a blank line to the console if the previous line was not blank.
+ */
+fun echoSeparator() {
+    if (output && !quietMode) {
+        println()
+        output = false
+    }
+}
+
+/**
  * Outputs a warning message even if quite mode is enabled.
+ *
+ * @param message The warning message to output to the console
  */
 fun warning(message: String) {
     val wasQuiet = quietMode
@@ -61,6 +92,9 @@ fun warning(message: String) {
 
 /**
  * Outputs an error message and terminates the script.
+ *
+ * @param message The error message to output to the console
+ * @return This function never returns
  */
 fun error(message: String, exitCode: Int = 1): Nothing {
     quietMode = false
@@ -69,51 +103,52 @@ fun error(message: String, exitCode: Int = 1): Nothing {
 }
 
 /**
- * Outputs a blank line to the console if a non-blank line was previously
- * output.
- */
-fun echoSeparator() {
-    if (output && !quietMode) {
-        println()
-        output = false
-    }
-}
-
-/**
  * Adds a row of [columns] to an internal table that is sent to the console
- * via the [echoTable] function. Only one internal table is maintained at a
- * time, and it is cleared of rows when echoed to the console.
+ * via the [echoTable] function.
+ *
+ * Only one internal table is maintained at a time, and it is cleared of rows
+ * when echoed to the console.
+ *
+ * @param columns The values for each column to output in a single row
  */
 fun addTableRow(vararg columns: String) {
-    if (columns.isNotEmpty()) {
-        capturedTable.add(columns.toList())
+    synchronized(capturedTable) {
+        if (columns.isNotEmpty()) {
+            capturedTable.add(columns.toList())
+        }
     }
 }
 
 /**
- * Prints a table with left-aligned columns, if rows have been previously
- * added via the [addTableRow] function. The [separator] provides space
- * between the columns.
+ * Echoes the internal table to the console with left-aligned columns.
+ *
+ * The actual output is based on rows previously added via the [addTableRow]
+ * function. The [separator] provides space between the columns.
+ *
+ * @param separator The column separator, defaults to four spaces
  */
 fun echoTable(separator: String = "    ") {
-    if (capturedTable.isNotEmpty() && !quietMode) {
-        // Determine maximum width for each column
-        val numColumns = capturedTable.map { it.count() }.max() ?: 0
-        val widths = Array(numColumns) { 0 }
-        capturedTable.forEach {
-            it.mapIndexed { i, s -> widths[i] = max(widths[i], s.length) }
+    synchronized(capturedTable) {
+        if (capturedTable.isNotEmpty() && !quietMode) {
+            // Determine maximum width for each column
+            val numColumns = capturedTable.map { it.count() }.max() ?: 0
+            val widths = Array(numColumns) { 0 }
+            capturedTable.forEach {
+                it.mapIndexed { i, s -> widths[i] = max(widths[i], s.length) }
+            }
+
+            // Construct format string
+            val format = (0 until numColumns)
+                .map { "%-${widths[it]}s" }
+                .dropLast(1)
+                .joinToString(separator) + "$separator%s"
+
+            // Output each row
+            capturedTable.forEach {
+                echo(String.format(format, *it.toTypedArray()))
+            }
         }
 
-        // Construct format string
-        val format = (0 until numColumns)
-            .map { "%-${widths[it]}s" }
-            .dropLast(1)
-            .joinToString(separator) + "$separator%s"
-
-        // Output each row
-        capturedTable.forEach {
-            echo(String.format(format, *it.toTypedArray()))
-        }
+        capturedTable.clear()
     }
-    capturedTable.clear()
 }

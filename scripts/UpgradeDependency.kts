@@ -46,8 +46,8 @@ val version = if (arguments.isNotEmpty()) arguments.first() else Framework.frame
 val library = if (arguments.count() > 1) arguments[1] else "io.alphalon.kotlin:kotlin-scripting"
 
 // Print usage and exit
-if (printHelp) {
-    val usage = """
+if (printHelp)
+    echoUsage("""
         Usage:
           upgradeDependency [options...] [version [groupId:artifactId]]
 
@@ -57,15 +57,11 @@ if (printHelp) {
 
         Options:
           -r, --repo       Upgrade all scripts in the repository
-          -p, --project    Upgrade all scripts in the current project
+          -p, --project    Upgrade all scripts in the project
           -m, --module     Upgrade all scripts in the module
-          -d, --dry-run    Performs a dry run
+          -d, --dry-run    Perform a dry run
           -q, --quiet      Quiet mode
-    """.trimIndent()
-
-    echo(usage)
-    exit()
-}
+    """)
 
 // Validate arguments
 if (library.split(":").count() != 2)
@@ -74,9 +70,9 @@ if (library.split(":").count() != 2)
 // Scope results
 val scope = try {
     when {
-        scopeRepo -> Framework.repo ?: throw RuntimeException("repository")
-        scopeProject -> Framework.project ?: throw RuntimeException("project")
-        scopeModule -> Framework.module ?: throw RuntimeException("module")
+        scopeRepo -> Framework.repoDir ?: throw RuntimeException("repository")
+        scopeProject -> Framework.projectDir ?: throw RuntimeException("project")
+        scopeModule -> Framework.moduleDir ?: throw RuntimeException("module")
         else -> null
     }
 } catch (e: RuntimeException) {
@@ -90,17 +86,12 @@ val scripts = if (scope != null)
 else
     findNearbyScripts()
 
-fun findDependencies(scripts: List<File>, library: String, version: String) = scripts.flatMap {
-    findScriptDependencies(it).filter { it.library == library && it.version != version }
+fun findDependencies(scripts: List<File>, library: String, version: String) = scripts.flatMap { script ->
+    findScriptDependencies(script).filter { it.library == library && it.version != version }
 }
 
 fun replaceDependency(dependency: Dependency, version: String) {
-    val old = dependency.spec
-    val new = dependency.copy(version = version).spec
-    val changed = dependency.script.bufferedReader().useLines { lines ->
-        lines.map { it.replace(old, new) }.toList()
-    }
-    dependency.script.writeText(changed.joinToString(System.lineSeparator(), postfix = System.lineSeparator()))
+    dependency.script.replace(dependency.spec, dependency.copy(version = version).spec)
 }
 
 // Find scripts to upgrade (those depending on a different version of the library)

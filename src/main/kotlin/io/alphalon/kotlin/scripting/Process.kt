@@ -24,41 +24,71 @@ package io.alphalon.kotlin.scripting
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import java.util.stream.Stream
+import kotlin.system.exitProcess
 
 /**
- * Returns the value of the environment variable which may be overridden by a
- * Java property.
+ * Returns the value of the environment variable, which may be overridden by a
+ * Java property of the same name.
  */
 fun env(name: String): String? {
     return System.getProperty(name) ?: System.getenv(name)
 }
 
 /**
- * Executes the [block] on a non-zero exit code and terminates the process.
+ * Immediately exits the script with the [exitCode].
  */
-fun Process?.fail(block: (() -> Unit)? = null) {
+fun exit(exitCode: Int = 0): Nothing {
+    exitProcess(exitCode)
+}
+
+/**
+ * For a non-zero exit code, executes the [block] and terminates the process.
+ *
+ * Does nothing when the [Process] completes successfully.
+ */
+fun Process.fail(block: (() -> Unit)? = null) {
     try {
         when {
-            this == null -> System.exit(1)
             exitValue() > 0 -> {
                 block?.invoke()
-                System.exit(exitValue())
+                exit(exitValue())
             }
         }
     } catch (e: IllegalThreadStateException) {
-        println("ERROR: the process has not terminated")
-        System.exit(1)
+        error("the process has not terminated")
     }
 }
 
 /**
- * Executes the [command], waiting for the process to finish.
+ * Parses the command line into the executable and it's arguments.
+ *
+ * TODO: replace naive parsing with something respecting quoted arguments
+ *
+ * @param commandLine A string containing the command and its arguments
+ * @return A list containing the command and its arguments
  */
-fun exec(command: List<String>, workingDir: File? = null, waitForMinutes: Long = 60): Process? {
+private fun parseCommandLine(commandLine: String): List<String> {
+    return commandLine.split(" ")
+}
+
+/**
+ * Executes the [command], waiting for the process to finish.
+ *
+ * @param command A list containing the command and its arguments
+ * @param workingDir The directory to execute the command, defaults to the current working directory
+ * @param console Whether to redirect the process's output to the console
+ * @param waitForMinutes The timeout value for the process to terminate
+ * @return The Java [Process]
+ */
+fun exec(command: List<String>, workingDir: File? = null, console: Boolean = true, waitForMinutes: Long = 60): Process {
     val builder = ProcessBuilder(command).apply {
         workingDir?.let { directory(it) }
-        redirectOutput(ProcessBuilder.Redirect.INHERIT)
-        redirectError(ProcessBuilder.Redirect.INHERIT)
+
+        if (console) {
+            redirectOutput(ProcessBuilder.Redirect.INHERIT)
+            redirectError(ProcessBuilder.Redirect.INHERIT)
+        }
     }
 
     try {
@@ -66,26 +96,52 @@ fun exec(command: List<String>, workingDir: File? = null, waitForMinutes: Long =
             try {
                 waitFor(waitForMinutes, TimeUnit.MINUTES)
             } catch (e: InterruptedException) {
-                println("WARNING: the process (${command.first()}) is taking longer than $waitForMinutes minutes")
+                warning("the process (${command.first()}) is taking longer than $waitForMinutes minutes")
             }
         }
     } catch (e: IOException) {
-        println("ERROR: ${e.message}")
+        error(e.message.toString())
+    }
+}
+
+/**
+ * Executes the [commandLine], waiting for the process to finish.
+ *
+ * @param commandLine A string containing the command and its arguments
+ * @param workingDir The directory to execute the command, defaults to the current working directory
+ * @param console Whether to redirect the process's output to the console
+ * @param waitForMinutes The timeout value for the process to terminate
+ * @return The Java [Process]
+ */
+fun exec(commandLine: String, workingDir: File? = null, console: Boolean = true, waitForMinutes: Long = 60) =
+    exec(parseCommandLine(commandLine), workingDir, console, waitForMinutes)
+
+/**
+ * Executes the [command], returning a [Stream] of lines from the output.
+ *
+ * @param command A list containing the command and its arguments
+ * @param workingDir The directory to execute the command, defaults to the current working directory
+ * @return The process's standard output and error combined
+ */
+fun execOutput(command: List<String>, workingDir: File? = null): Stream<String> {
+    val builder = ProcessBuilder(command).apply {
+        workingDir?.let { directory(it) }
+        redirectErrorStream(true)
     }
 
-    return null
+    return try {
+        builder.start().inputStream.bufferedReader().lines()
+    } catch (e: IOException) {
+        error(e.message.toString())
+    }
 }
 
 /**
- * Executes the [commandLine], performing a terribly naive parsing operation
- * to separate the arguments to pass to the process. Use at your own risk!
+ * Executes the [commandLine], returning a [Stream] of lines from the output.
+ *
+ * @param commandLine A string containing the command and its arguments
+ * @param workingDir The directory to execute the command, defaults to the current working directory
+ * @return The process's standard output and error combined
  */
-fun exec(commandLine: String) = exec(commandLine.split(" "))
-
-/**
- * Immediately exits the script with the [exitCode].
- */
-fun exit(exitCode: Int = 0): Nothing {
-    System.exit(exitCode)
-    throw RuntimeException("This will never get called")
-}
+fun execOutput(commandLine: String, workingDir: File? = null) =
+    execOutput(parseCommandLine(commandLine), workingDir)

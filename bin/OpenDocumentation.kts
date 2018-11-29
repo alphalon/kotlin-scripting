@@ -11,9 +11,10 @@
 import io.alphalon.kotlin.scripting.*
 import java.io.File
 
-val index = File("build/dokka/scripting/io.alphalon.kotlin.scripting/index.html")
+val project = Framework.project ?: error("could not find project file")
+project.exec("dokka").fail()
 
-exec("./gradlew dokka").fail()
+val index = File(Framework.projectDir, "build/dokka/scripting/io.alphalon.kotlin.scripting/index.html")
 if (index.exists())
     exec("open $index")
 else
