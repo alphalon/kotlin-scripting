@@ -55,8 +55,11 @@ fun File.isDescendant(ancestor: File): Boolean {
  * File types.
  */
 enum class FileType {
+    /** All files. */
     ALL,
+    /** Files only. */
     FILE,
+    /** Directories only. */
     DIRECTORY
 }
 
