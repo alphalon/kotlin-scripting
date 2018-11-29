@@ -17,11 +17,12 @@
  * limitations under the License.
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
 package io.alphalon.kotlin.scripting
 
 import java.io.File
+import kotlin.streams.toList
 
 /**
  * Represents a source code repository.
@@ -35,19 +36,62 @@ open class Repository(val file: File)
  */
 open class GitRepository(dir: File) : Repository(dir) {
 
+    private fun statusFiles(pred: (String) -> Boolean): List<File> =
+        execOutput("git status --porcelain")
+            .filter { pred(it) }
+            .map { File(it.substring(3).trim('"')) }
+            .toList()
+
+    /**
+     * Returns whether there are new or modified files in the repository.
+     */
+    fun isDirty(): Boolean =
+        execOutput("git status --porcelain").toList().isNotEmpty()
+
+    /**
+     * Returns a list of modified and tracked files that needs to be added to
+     * the index.
+     */
+    fun changedFiles(): List<File> = statusFiles { it[1] == 'M' }
+
+    /**
+     * Returns a list of untracked files.
+     */
+    fun newFiles(): List<File> = statusFiles { it.startsWith("?? ") }
+
     /**
      * Returns whether changes are detected in the repository.
      *
      * @return True, whether changes are detected or changes cannot be detected
      */
-    fun hasChanges(): Boolean = exec("git status --exit-code", console = false).exitValue() > 0
+    fun hasChanges(): Boolean =
+        changedFiles().isNotEmpty()
+
+    /**
+     * Adds a [file] to the index.
+     *
+     * @param file The file to commit
+     * @return The Java [Process]
+     */
+    fun add(file: File): Process =
+        exec(listOf("git", "add", file.absolutePath))
+
+    /**
+     * Commits the files added to the index with the provided [message].
+     *
+     * @param message The commit message
+     * @return The Java [Process]
+     */
+    fun commit(message: String): Process =
+        exec(listOf("git", "commit", "-m", message))
 
     /**
      * Creates a new tag or moves an existing tag with the same name.
      *
      * @return a Java [Process]
      */
-    fun tag(tag: String) = exec("git tag -f '$tag'")
+    fun tag(tag: String): Process =
+        exec(listOf("git", "tag", "-f", tag))
 }
 
 internal fun repo(file: File): Repository =

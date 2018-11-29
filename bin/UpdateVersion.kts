@@ -33,39 +33,56 @@ if (printHelp)
         from the current version.
     """)
 
-val project = Framework.project ?: error("unable to find project")
+val repo: GitRepository = currentRepo()
+val project: GradleProject = currentProject()
+
+// Make sure there are no changed files
+if (repo.isDirty())
+    error("Cannot change the version with with changed files in the repository")
+
+val snapshotSuffix = "-SNAPSHOT"
+fun String.isSnapshot() = endsWith(snapshotSuffix)
 
 // Get current version
 if (version == null) {
-    val current = project.version ?: error("unable to determine the current project version")
-    if (current.endsWith("-SNAPSHOT")) {
-        version = current.removeSuffix("-SNAPSHOT")
+    val current = project.version ?: error("Unable to determine the current project version")
+    if (current.isSnapshot()) {
+        version = current.removeSuffix(snapshotSuffix)
         echo("Changing the project version to $version")
     }
 }
 
 if (version == null)
-    error("the new version must be specified")
+    error("The new version must be specified")
 
 // BUG: the Kotlin compiler is not recognizing version as String after null check
 val newVersion = version!!
 
 val versionRegex = Regex("""[\d.]*(-SNAPSHOT)?""")
 if (!newVersion.matches(versionRegex))
-    error("invalid version does not match regex '${versionRegex.pattern}'")
+    error("Invalid version does not match regex '${versionRegex.pattern}'")
 
-// Update gradle build
+// Update Gradle project file
 project.file.replace(Regex("""^version\s*=\s*"(.*)""""), 1, newVersion)
 
-// Update scripts
-runScript("upgradeDependency", newVersion)
+// Update all Kotlin scripts in project
+runScript("upgradeDependency", newVersion).fail()
 
-// Update readme
+// Update framework version script
+val script = File("scripts/ko-framework-version.sh")
+script.replace(Regex(""".*KO_VERSION\s*=\s*"(.*)""""), 1, newVersion)
+
+// Update version references in readme file
 if (!newVersion.endsWith("-SNAPSHOT")) {
     val readme = File("README.md")
     readme.replace(Regex("""kotlin-scripting:([\d.]*)"""), 1, newVersion)
     readme.replace(Regex("""tags/v([\d.]*)"""), 1, newVersion)
 }
 
+// Commit these changes to repo
+val message = if (newVersion.isSnapshot()) "Preparing for ${newVersion.removeSuffix(snapshotSuffix)}" else "Releasing v$newVersion"
+repo.changedFiles().forEach { repo.add(it) }
+repo.commit(message)
+
 // Publish new version so scripts resolve
-exec("./install.sh").fail()
+project.exec("publishToMavenLocal").fail()

@@ -12,11 +12,11 @@
 import io.alphalon.kotlin.scripting.*
 import java.io.File
 
-val project = Framework.project ?: error("could not find project file")
+val project: GradleProject = currentProject()
 project.exec("dokka").fail()
 
 val index = File(Framework.projectDir, "build/dokka/scripting/io.alphalon.kotlin.scripting/index.html")
 if (index.exists())
     exec("open $index")
 else
-    error("the documentation was not generated.")
+    error("The documentation was not generated")
