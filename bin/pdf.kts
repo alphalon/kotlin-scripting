@@ -6,7 +6,7 @@
 //DIR  $KO_PROJECT
 //CMD  pdf Generates a PDF from the project README.md file
 
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.1
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.2-SNAPSHOT
 
 import io.alphalon.kotlin.scripting.*
 
