@@ -109,6 +109,16 @@ object Framework {
 }
 
 /**
+ * Returns the typed repository or terminates the script with an error.
+ */
+inline fun <reified T> repo(): T = Framework.repo as? T ?: error("Expecting ${T::class.java.simpleName}")
+
+/**
+ * Returns the typed project or terminates the script with an error.
+ */
+inline fun <reified T> project(): T = Framework.project as? T ?: error("Expecting ${T::class.java.simpleName}")
+
+/**
  * Represents a command found on the search path.
  *
  * @property name The command name found inside the script or derived from the script filename
