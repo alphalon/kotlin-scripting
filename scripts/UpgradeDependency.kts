@@ -80,13 +80,6 @@ val scope = try {
     error("could not find ${e.message} scope")
 }
 
-echo("Upgrading to $library:$version")
-
-val scripts = if (scope != null)
-    findAllScriptsWithinScope(scope)
-else
-    findNearbyScripts()
-
 fun findDependencies(scripts: List<File>, library: String, version: String) = scripts.flatMap { script ->
     findScriptDependencies(script).filter { it.library == library && it.version != version }
 }
@@ -95,7 +88,15 @@ fun replaceDependency(dependency: Dependency, version: String) {
     dependency.script.replace(dependency.spec, dependency.copy(version = version).spec)
 }
 
-// Find scripts to upgrade (those depending on a different version of the library)
+echo("Upgrading to $library:$version")
+
+// Find scripts to potentially update
+val scripts = if (scope != null)
+    findAllScriptsWithinScope(scope)
+else
+    findNearbyScripts()
+
+// Find scripts to needing the version change
 val upgradable = findDependencies(scripts, library, version)
 if (upgradable.isEmpty()) {
     echo("Could not find any scripts to upgrade")
