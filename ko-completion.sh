@@ -23,43 +23,41 @@
 # https://iridakos.com/tutorials/2018/03/01/bash-programmable-completion-tutorial.html
 
 function ko-completions {
-  local cmd=
-  local help=0
-  local args=0
+  local cmd
+  local cmdw
+  local helpw
+
+  local i=0
   shopt -s nocasematch
   for w in "${COMP_WORDS[@]}"; do
-    if [[ -z $cmd ]]; then
-      if [[ $w == "help" ]]; then
-        help=1
-      elif [[ $w != "ko" && $w != -* ]]; then
-        cmd="$w"
-      fi
-    else
-      args=1
+    if [[ $w == "help" ]]; then
+      cmdw=$i
+      helpw=$i
+    elif [[ $w != "ko" && $w != -* ]]; then
+      cmd="$w"
+      cmdw=$i
       break
     fi
+    i=$((i + 1))
   done
-  shopt -u nocasematch
 
   local cword="${COMP_WORDS[COMP_CWORD]}"
 
-  if [[ $args -eq 0 ]]; then
+  if [[ $cmdw -eq 0 || ($COMP_CWORD -lt $cmdw && ($helpw -eq 0 || $COMP_CWORD -lt $helpw)) ]]; then
     if [[ $cword == --* ]]; then
-      if [[ $help -eq 0 ]]; then
-        COMPREPLY=($(compgen -W "--create --edit --search-path --file --dir --version --verbose --help" -- "$cword"))
-      fi
+      COMPREPLY=($(compgen -W "--create --edit --search-path --file --dir --version --verbose --help" -- "$cword"))
     elif [[ $cword == -* ]]; then
-      if [[ $help -eq 0 ]]; then
-        COMPREPLY=($(compgen -W "-c -e -s -f -d -v -h" -- "$cword"))
-      fi
-    else
-      if [[ $help -gt 0 && -z $cmd && $COMP_LINE == *help ]]; then
-        cmd="help"
-      fi
-
-      COMPREPLY=($(ko --completion "$cmd"))
+      COMPREPLY=($(compgen -W "-c -e -s -f -d -v -h" -- "$cword"))
     fi
+  elif [[ $COMP_CWORD -eq $cmdw ]]; then
+    if [[ $helpw -gt 0 && $cword == "help" ]]; then
+      cmd="help"
+    fi
+
+    COMPREPLY=($(ko --completion "$cmd"))
   fi
+
+  shopt -u nocasematch
 }
 
 complete -F ko-completions ko
