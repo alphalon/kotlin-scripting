@@ -44,10 +44,10 @@ open class GitRepository(dir: File) : Repository(dir) {
 
     /**
      * Creates a new tag or moves an existing tag with the same name.
+     *
+     * @return a Java [Process]
      */
-    fun tag(tag: String) {
-        exec("git tag -af '$tag'")
-    }
+    fun tag(tag: String) = exec("git tag -f '$tag'")
 }
 
 internal fun repo(file: File): Repository =
