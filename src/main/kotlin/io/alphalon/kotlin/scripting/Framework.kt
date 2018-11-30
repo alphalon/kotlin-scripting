@@ -132,6 +132,7 @@ data class Command(val name: String, val description: String, val script: File)
  *
  * @param file The script file
  * @return The commands found in the script, may be empty
+ * @suppress
  */
 fun commandsInFile(file: File): List<Command> =
     file.bufferedReader().useLines { lines ->
@@ -151,6 +152,7 @@ fun commandsInFile(file: File): List<Command> =
  *
  * @param directory The directory to search
  * @return The commands found in the directory
+ * @suppress
  */
 fun commandsInDirectory(directory: File): List<Command> = directory
     .listFiles { _, name -> name.endsWith(".kts") }
@@ -194,6 +196,7 @@ fun availableCommands(ancestor: File? = null): List<Command> =
  *
  * @param command The command to query
  * @return True, if the command supports the --help option
+ * @suppress
  */
 fun commandProvidesHelp(command: Command): Boolean =
     command.script.bufferedReader().useLines { lines ->
@@ -246,10 +249,7 @@ fun searchForCommand(name: String, ancestor: File? = null): Command? {
  * @param args The arguments to pass to the script
  * @return The Java [Process]
  */
-fun runScript(command: String, vararg args: String): Process {
-    val cmd = listOf("ko", command) + args
-    return exec(cmd)
-}
+fun runScript(command: String, vararg args: String): Process = exec(listOf("ko", command) + args)
 
 /**
  * Runs the script represented by the [command] in an external process,
@@ -263,7 +263,7 @@ fun runScript(command: String, vararg args: String): Process {
  * @param args The arguments to pass to the script
  * @return The Java [Process]
  */
-fun runScript(command: Command, vararg args: String) = runScript(command.name, *args)
+fun runScript(command: Command, vararg args: String): Process = runScript(command.name, *args)
 
 /**
  * Finds all scripts located in the specified or current [directory] and the
@@ -271,6 +271,7 @@ fun runScript(command: Command, vararg args: String) = runScript(command.name, *
  *
  * @param directory The directory and parent to search, defaults to the current working directory
  * @return The found script files
+ * @suppress
  */
 fun findNearbyScripts(directory: File = pwd()): List<File> {
     val dirs = listOf(directory) + System.getenv("KO_SEARCH_DIRS").split(":").map { File(directory, it) }
@@ -285,6 +286,7 @@ fun findNearbyScripts(directory: File = pwd()): List<File> {
  *
  * @param scope The ancestor directory to search
  * @return The found script files
+ * @suppress
  */
 fun findAllScriptsWithinScope(scope: File): List<File> {
     return Files.find(Paths.get(scope.absolutePath), 100, BiPredicate { path, _ ->

@@ -105,7 +105,7 @@ You can also list the commands defined in the current project:
 ko help -p
 ```
 
-    Pro Tip: `alias kl='ko help -p'`
+Pro Tip: `alias kl='ko help -p'`
 
 #### Creating a new script
 
@@ -231,13 +231,14 @@ These environment variables are available to your Kotlin script when called via 
 - `KO_REPO` - the top-level directory of the source code repository, optional
 - `KO_PROJECT` - the top-level directory of current project, optional
 - `KO_MODULE` - the nearest directory representing a module, optional
+- `KO_REPO_FILE` - the marker identifying the repository
 - `KO_PROJECT_FILE` - the primary build file used for the project
 
-The `Frameowrk` class in the scripting library provides convenient access to the runtime environment setup by the framework.
+The `Framework` class in the scripting library provides convenient access to the runtime environment setup by the framework.
 
 ## Scripting Library
 
-NOTE: The scripting library has not yet been developed, so the functionality is limited at this early stage.
+NOTE: The scripting library is a work in progress, so the functionality is limited at this stage.
 
 Adding a dependency on the scripting library can be performed by adding the following preamble to your script file (using the appropriate version, of course):
 
@@ -286,7 +287,7 @@ If the install script detects a $HOME/bin directory, it will create a symlink `k
 
 Alternatively, you can create an alias to this script, or copy the `ko.sh` file and `scripts` directory to any location on your executable path.
 
-Bash completion is also supported though the `ko-completion.sh` script. This will be symlinked into the /usr/local/etc/bash_completion.d directory if it exists.
+Bash completion is also supported though the `ko-completion.sh` script. This will be symlinked into the /usr/local/etc/bash_completion.d directory if it exists. If not, you simply need to source this file in each bash session.
 
 The `./install.sh` script also builds the scripting library and installs it in your local maven repository for resolution by kscript. This script can be run whenever you make changes to the library sources so that they become available to your scripts through kscript dependency resolution.
 
