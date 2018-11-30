@@ -303,6 +303,8 @@ In addition, the `bin` directory contains automation scripts for this project.
 
 Run the `ko` script with the `--verbose` option to output information regarding the script runtime environment.
 
+If you're experiencing issues with transitive dependencies not being resolved, so some other weird issue running a script, try running `kscript --clear-cache`. This will clear the cache for all scripts and they will be compiled afresh.
+
 ### Interactive Session
 
 Use the `-i` option with `ko` to start an interactive session. Your script dependencies will be on the classpath but you'll have to import the types as you need them. To get started playing with this library:
