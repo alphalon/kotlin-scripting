@@ -105,7 +105,7 @@ You can also list the commands defined in the current project:
 ko help -p
 ```
 
-Pro Tip: `alias kl='ko help -p'`
+    Pro Tip: `alias kl='ko help -p'`
 
 #### Creating a new script
 
@@ -302,6 +302,14 @@ In addition, the `bin` directory contains automation scripts for this project.
 ## Diagnostics
 
 Run the `ko` script with the `--verbose` option to output information regarding the script runtime environment.
+
+### Interactive Session
+
+Use the `-i` option with `ko` to start an interactive session. Your script dependencies will be on the classpath but you'll have to import the types as you need them. To get started playing with this library:
+
+```kotlin
+import io.alphalon.kotlin.scripting.*
+```
 
 ## TODO
 

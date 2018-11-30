@@ -35,6 +35,7 @@ if [[ -z $1 || $1 == "-h" || $1 == "--help" ]]; then
   echo "Options:"
   echo "  -c,--create         Creates and edits a new script named <command>.kts"
   echo "  -e,--edit           Edits the existing script matching <command>"
+  echo "  -i,--interactive    Starts an interactive session for a script"
   echo "  -s,--search-path    Prints the search path for the current directory"
   echo "  -f,--file           Prints the filename of the matching script"
   echo "  -d,--dir            Prints the directory containing the matching script"
@@ -49,6 +50,7 @@ while [[ -n $1 && $1 == -* ]]; do
   case $1 in
   "-c" | "--create") CREATE_SCRIPT=1; shift;;
   "-e" | "--edit") EDIT_SCRIPT=1; shift;;
+  "-i" | "--interactive") INTERACTIVE=1; shift;;
   "-i" | "--idea") IDEA_SCRIPT=1; shift;;
   "-s" | "--search-path") PRINT_SEARCH=1; shift;;
   "-f" | "--file") PRINT_FILE=1; shift;;
@@ -578,6 +580,11 @@ if [[ $VERBOSE -gt 0 ]]; then
   echo
 fi
 
+KSCRIPT_OPTS=
+if [[ $INTERACTIVE -gt 0 ]]; then
+  KSCRIPT_OPTS="--interactive"
+fi
+
 if [[ $IDEA_SCRIPT -gt 0 ]]; then
   # Edit found script in IDEA
   pushd "$(dirname "$KO_SCRIPT")" >/dev/null
@@ -593,9 +600,9 @@ elif [[ $PRINT_DIR -gt 0 ]]; then
 elif [[ $KO_DIR != $PWD ]]; then
   # Execute script in specified directory
   pushd "$KO_DIR" >/dev/null
-  kscript "$KO_SCRIPT" "$@"
+  kscript $KSCRIPT_OPTS "$KO_SCRIPT" "$@"
   popd >/dev/null
 else
   # Execute script in current directory
-  kscript "$KO_SCRIPT" "$@"
+  kscript $KSCRIPT_OPTS "$KO_SCRIPT" "$@"
 fi
