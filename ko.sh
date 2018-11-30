@@ -289,6 +289,20 @@ function find-command {
   shopt -u nocasematch
 }
 
+# Searches directories and files for command matches
+# Args: command
+function find-script-or-command {
+  for p in "${PATHS[@]}"; do
+    if [[ -d $p ]]; then
+      # echo "Searching for $1 in directory $p"
+      find-script "$1" "$p"
+    elif [[ -f $p ]]; then
+      # echo "Searching for $1 in script $p"
+      find-command "$1" "$p"
+    fi
+  done
+}
+
 # Checks the search results for partial and exact matches
 # Args: command
 function check-results {
@@ -499,28 +513,16 @@ fi
 KO_COMMAND=
 IFS=':' read -ra PATHS <<< "${KO_SEARCH_PATH}"
 SCRIPTS=()
-for p in "${PATHS[@]}"; do
-  if [[ -d $p ]]; then
-    # echo "Searching for $COMMAND in directory $p"
-    find-script "$COMMAND" "$p"
-  elif [[ -f $p ]]; then
-    # echo "Searching for $COMMAND in script $p"
-    find-command "$COMMAND" "$p"
-  fi
-done
+find-script-or-command "$COMMAND"
 
 # Try fuzzy search when nothing is found
 if [[ ${#SCRIPTS[@]} -eq 0 ]]; then
-  COMMAND=$(echo "$COMMAND" | sed -e 's/\([[:upper:]]\)/*\1/g')
-  for p in "${PATHS[@]}"; do
-    if [[ -d $p ]]; then
-      # echo "Searching for $COMMAND in directory $p"
-      find-script "$COMMAND" "$p"
-    elif [[ -f $p ]]; then
-      # echo "Searching for $COMMAND in script $p"
-      find-command "$COMMAND" "$p"
-    fi
-  done
+  WORD_FUZZY=$(echo "$COMMAND" | sed -e 's/\([[:upper:]]\)/*\1/g')
+  find-script-or-command "$WORD_FUZZY"
+fi
+if [[ ${#SCRIPTS[@]} -eq 0 ]]; then
+  LETTER_FUZZY=$(echo "$COMMAND" | sed -e 's/\([[:alpha:]]\)/*\1/g')
+  find-script-or-command "$LETTER_FUZZY"
 fi
 
 if [[ $DEBUG -gt 0 ]]; then
