@@ -65,7 +65,7 @@ Running `ko` without any arguments or with the `--help` option will print usage 
 
 #### Executing a script
 
-```bash
+```
 ko <command> [args...]
 ``` 
 
@@ -93,7 +93,7 @@ Lists the available commands that can be executed from the current directory. If
 
 Run the `ko help --help` command for information about additional options for the help command.
 
-```bash
+```
 ko help <command>
 ```
 
@@ -109,7 +109,7 @@ Pro Tip: `alias kl='ko help -p'`
 
 #### Creating a new script
 
-```bash
+```
 ko -c <command>
 ```
 
@@ -119,7 +119,7 @@ The new script will be opened in your editor automatically where you can quickly
 
 #### Edit an existing script
 
-```bash
+```
 ko -e <command>
 ```
 
@@ -131,7 +131,7 @@ Alternatively, `ko --idea <command>` leverages kscript to create a temporary pro
 
 Since each script is a standalone program, it must declare its own dependencies. To ease the pain of keeping versions the same across scripts, this framework includes a command to upgrade your Kotlin scripts:
 
-```bash
+```
 ko upgradeDependency [--repo|--project|--module] [version [groupId:artifactId]]
 ```
 
@@ -308,7 +308,7 @@ If you're experiencing issues with transitive dependencies not being resolved, s
 
 ### Interactive Session
 
-Use the `-i` option with `ko` to start an interactive session. Your script dependencies will be on the classpath but you'll have to import the types as you need them. To get started playing with this library:
+Use `ko -i <command>` to start an interactive session. Your script dependencies will be on the classpath but you'll have to import the types as you need them. Only one import statement is required to get started playing with this library:
 
 ```kotlin
 import io.alphalon.kotlin.scripting.*
