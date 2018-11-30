@@ -52,6 +52,18 @@ fun File.isDescendant(ancestor: File): Boolean {
 }
 
 /**
+ * Opens a file using a preferred or default application.
+ *
+ * Terminates the script if the file does not exist.
+ *
+ * @param errorMessage The message to display if the file does not exist
+ */
+fun File.open(errorMessage: String? = null) = if (exists())
+    os().open(this)
+else
+    error(errorMessage ?: "The file $absolutePath does not exist")
+
+/**
  * File types.
  */
 enum class FileType {
