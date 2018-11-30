@@ -110,7 +110,7 @@ if (dryRun) {
     echoTable()
 } else {
     echo("Upgrading:")
-    upgradable.forEach {
+    upgradable.forEachAsync {
         echo(it.script.absolutePath)
         replaceDependency(it, version)
     }
