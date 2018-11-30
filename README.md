@@ -71,7 +71,7 @@ ko <command> [args...]
 
 The command is used to identify which `.kts` script should be called based on the search path. Only the beginning part of the script name needs to be specified, however it much be unambiguous in order for the script to be executed.
 
-What you enter for the command is matched against the beginning of all available commands (case-insensitive).
+What you enter for the command is matched against the beginning of all available commands (case-insensitive). If a command is not found, a fuzzy search will be performed with wildcards added before uppercase letters, for example, 'oD' would match 'openDocumentation' (the match is transformed from od\* to o\*d\*).
 
 Successful selection (for execution, editing, etc) requires one of the following:
 

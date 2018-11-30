@@ -509,6 +509,20 @@ for p in "${PATHS[@]}"; do
   fi
 done
 
+# Try fuzzy search when nothing is found
+if [[ ${#SCRIPTS[@]} -eq 0 ]]; then
+  COMMAND=$(echo "$COMMAND" | sed -e 's/\([[:upper:]]\)/*\1/g')
+  for p in "${PATHS[@]}"; do
+    if [[ -d $p ]]; then
+      # echo "Searching for $COMMAND in directory $p"
+      find-script "$COMMAND" "$p"
+    elif [[ -f $p ]]; then
+      # echo "Searching for $COMMAND in script $p"
+      find-command "$COMMAND" "$p"
+    fi
+  done
+fi
+
 if [[ $DEBUG -gt 0 ]]; then
   echo "All matches:"
   for s in "${SCRIPTS[@]}"; do
