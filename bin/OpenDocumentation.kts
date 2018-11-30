@@ -7,7 +7,7 @@
 //CMD openDocumentation - Generates and opens the library API docs
 
 //COMPILER_OPTS -jvm-target 1.8
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.3-SNAPSHOT
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.3
 
 import io.alphalon.kotlin.scripting.*
 import java.io.File

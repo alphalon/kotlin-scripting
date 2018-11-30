@@ -7,7 +7,7 @@
 //CMD publish - Publishes the project after running tests successfully
 
 //COMPILER_OPTS -jvm-target 1.8
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.3-SNAPSHOT
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.3
 
 import io.alphalon.kotlin.scripting.*
 
