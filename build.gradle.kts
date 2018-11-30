@@ -45,7 +45,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("scripting-jvm"))
-    compile("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Versions.kotlinCoroutines}")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:${Versions.kotlinCoroutines}")
 
     testImplementation(kotlin("test-junit5"))
     testImplementation("com.github.holgerbrandl:kscript-annotations:1.2")
