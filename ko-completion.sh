@@ -44,20 +44,32 @@ function ko-completions {
   local cword="${COMP_WORDS[COMP_CWORD]}"
 
   if [[ $cmdw -eq 0 || ($COMP_CWORD -lt $cmdw && ($helpw -eq 0 || $COMP_CWORD -lt $helpw)) ]]; then
+    # Get matching options (for ko.sh script)
     if [[ $cword == --* ]]; then
       COMPREPLY=($(compgen -W "--create --edit --search-path --file --dir --version --verbose --help" -- "$cword"))
     elif [[ $cword == -* ]]; then
       COMPREPLY=($(compgen -W "-c -e -s -f -d -v -h" -- "$cword"))
     fi
+    COMPREPLY=("${COMPREPLY[@]/%/ }")
   elif [[ $COMP_CWORD -eq $cmdw ]]; then
+    # Get matching scripts for command
     if [[ $helpw -gt 0 && $cword == "help" ]]; then
       cmd="help"
     fi
 
     COMPREPLY=($(ko --completion "$cmd"))
+    COMPREPLY=("${COMPREPLY[@]/%/ }")
+  else
+    # Get matching files and directories
+    COMPREPLY=($(compgen -f  -- "${COMP_WORDS[${COMP_CWORD}]}" ))
+
+    for ((ff=0; ff<${#COMPREPLY[@]}; ff++)); do
+      test -d "${COMPREPLY[$ff]}" && COMPREPLY[$ff]="${COMPREPLY[$ff]}/"
+      test -f "${COMPREPLY[$ff]}" && COMPREPLY[$ff]="${COMPREPLY[$ff]} "
+    done
   fi
 
   shopt -u nocasematch
 }
 
-complete -F ko-completions ko
+complete -o bashdefault -o nospace -F ko-completions ko
