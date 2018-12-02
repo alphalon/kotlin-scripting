@@ -1,7 +1,4 @@
 /*
- * Project: Kotlin Scripting
- * Created: Nov 29, 2018
- *
  * Copyright (c) 2018 Alphalon, LLC. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
