@@ -20,6 +20,7 @@ val options = args.filter { it.startsWith("-") }.map(String::toLowerCase)
 val arguments = args.filter { !it.startsWith("-") }
 
 val printHelp = options.hasFlag("-h", "--help")
+val force = options.hasFlag("-f", "--force")
 var version = arguments.firstOrNull()
 
 // Print usage and exit
@@ -31,13 +32,20 @@ if (printHelp)
         Updates the project to the new version, including all files that reference the
         version. If a new version is not provided, will remove the -SNAPSHOT suffix
         from the current version.
+
+        If run against a repository with changes, the newly changed files will not be
+        committed.
+
+        Options:
+          -f, --force    Allow the version change even when the repo is dirty
     """)
 
 val repo: GitRepository = currentRepo()
 val project: GradleProject = currentProject()
 
 // Make sure there are no changed files
-if (repo.isDirty())
+val dirty = repo.isDirty()
+if (dirty && !force)
     error("Cannot change the version with with changed files in the repository")
 
 val snapshotSuffix = "-SNAPSHOT"
@@ -80,9 +88,11 @@ if (!newVersion.endsWith("-SNAPSHOT")) {
 }
 
 // Commit these changes to repo
-val message = if (newVersion.isSnapshot()) "Preparing for ${newVersion.removeSuffix(snapshotSuffix)}" else "Releasing v$newVersion"
-repo.changedFiles().forEach { repo.add(it) }
-repo.commit(message)
+if (!dirty) {
+    val message = if (newVersion.isSnapshot()) "Preparing for ${newVersion.removeSuffix(snapshotSuffix)}" else "Releasing v$newVersion"
+    repo.changedFiles().forEach { repo.add(it) }
+    repo.commit(message)
+}
 
 // Publish new version so scripts resolve
 project.exec("publishToMavenLocal").fail()
