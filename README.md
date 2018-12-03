@@ -318,6 +318,10 @@ Use `ko -i <command>` to start an interactive session. Your script dependencies 
 import io.alphalon.kotlin.scripting.*
 ```
 
+## REPL
+
+You can run the `repl.sh` script in the project root directory to start a Kotlin REPL with the necessary classpath. The `:load repl.kts` REPL command will initialize the session with some useful imports.
+
 ## TODO
 
 - Split argument parsing in multi-platform library

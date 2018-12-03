@@ -111,3 +111,11 @@ publishing {
 tasks.withType<DokkaTask> {
     jdkVersion = 8
 }
+
+// Output the classpath for the repl.sh script
+tasks.create("classpath") {
+    dependsOn(tasks.assemble)
+    doLast {
+        println("RUNTIME CLASSPATH: ${configurations.runtimeClasspath.get().asPath}")
+    }
+}
