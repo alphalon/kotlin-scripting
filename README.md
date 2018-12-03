@@ -71,12 +71,16 @@ ko <command> [args...]
 
 The command is used to identify which `.kts` script should be called based on the search path. Only the beginning part of the script name needs to be specified, however it much be unambiguous in order for the script to be executed.
 
-What you enter for the command is matched against the beginning of all available commands (case-insensitive). If a command is not found, a fuzzy search will be performed with wildcards added before uppercase letters, for example, 'oD' would match 'openDocumentation' (the match is transformed from od\* to o\*d\*).
+What you enter for the command is matched against the beginning of all available commands (case-insensitive). Command name matching is a multi-stage process:
+
+- Exact match with beginning of command name
+- Word fuzzy match where wildcards are added before uppercase letters
+- Letter fuzzy match wildcards are added before every letter
 
 Successful selection (for execution, editing, etc) requires one of the following:
 
 - A single match
-- An exact match (shadows other matches)
+- An exact match (can shadow other matches)
 - Multiple partial matches to identical commands
 
 In the case of successfully matching against multiple scripts (or implementations of the same command), the first one on the search path is chosen.
@@ -258,7 +262,7 @@ It is intended for this library to include support for the most commonly used fe
 
 - Command line argument parsing (geared toward self documentation)
 - Kotlin-idiomatic way for calling other programs or build scripts
-- Parsing and manipulation of JSON and XML documents
+- Parsing and manipulation of JSON, XML, and CSV documents
 - Asynchronous HTTP client (based on ktor)
 - Equivalents for tools such as find, grep, sed, awk, etc
 
@@ -298,13 +302,13 @@ The built-in commands are implemented as Kotlin scripts and located in this proj
 - [Help](scripts/Help.kts) - Provides information about available commands
 - [Upgrade Dependency](scripts/UpgradeDependency.kts) - Modifies dependency versions in existing scripts
 
-In addition, the `bin` directory contains automation scripts for this project.
+In addition, the [bin](bin) directory contains automation scripts for this project.
 
 ## Diagnostics
 
 Run the `ko` script with the `--verbose` option to output information regarding the script runtime environment.
 
-If you're experiencing issues with transitive dependencies not being resolved, so some other weird issue running a script, try running `kscript --clear-cache`. This will clear the cache for all scripts and they will be compiled afresh.
+If you're experiencing issues with transitive dependencies not being resolved, or some other weird issue running a script, try using the `--clean`. This will clear the cache for all scripts and ensure they are re-compiled when run the next time.
 
 ### Interactive Session
 
@@ -316,6 +320,7 @@ import io.alphalon.kotlin.scripting.*
 
 ## TODO
 
+- Split argument parsing in multi-platform library
 - Develop the library with useful stuff
 - Publish the library to Maven Central
 - Publish the framework to Homebrew

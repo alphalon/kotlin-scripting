@@ -40,8 +40,8 @@ if [[ -z $1 || $1 == "-h" || $1 == "--help" ]]; then
   echo "  -f,--file           Prints the filename of the matching script"
   echo "  -d,--dir            Prints the directory containing the matching script"
   echo "  -v,--version        Prints the version"
-  echo "  --verbose           Prints information about the process"
-  echo
+  echo "  --verbose           Prints information about the script resolution process"
+  echo "  --clean             Clears the kscript compilation cache"
   exit 0
 fi
 
@@ -55,6 +55,7 @@ while [[ -n $1 && $1 == -* ]]; do
   "-s" | "--search-path") PRINT_SEARCH=1; shift;;
   "-f" | "--file") PRINT_FILE=1; shift;;
   "-d" | "--dir") PRINT_DIR=1; shift;;
+  "--clean") CLEAR_CACHE=1; shift;;
   "-v" | "--version") PRINT_VERSION=1; shift;;
   "--verbose") VERBOSE=1; shift;;
   "--debug") DEBUG=1; shift;;
@@ -65,6 +66,11 @@ done
 
 if [[ $DEBUG -gt 0 ]]; then
   VERBOSE=1
+fi
+
+# Clear the kscript cache
+if [[ $CLEAR_CACHE -gt 0 ]]; then
+  kscript --clear-cache
 fi
 
 # Find the directory containing this script
@@ -496,12 +502,13 @@ if [[ $VERBOSE -gt 0 ]]; then
 fi
 
 COMMAND=$1
-if [[ -z $COMMAND  && $COMPLETION -eq 0 ]]; then
-  if [[ $VERBOSE -eq 0 ]]; then
-    echo "ERROR: the command parameter has not been specified"
-    exit 1
+if [[ -z $COMMAND && $COMPLETION -eq 0 ]]; then
+  if [[ $VERBOSE -gt 0 || $CLEAR_CACHE -gt 0 ]]; then
+    exit 0
   fi
-  exit
+
+  echo "ERROR: the command parameter has not been specified"
+  exit 1
 fi
 
 # Create new script in closest location
@@ -542,7 +549,7 @@ if [[ $COMPLETION -gt 0 ]]; then
       echo "$CMD"
     fi
   done
-  exit
+  exit 0
 fi
 
 # Check to make sure we only found one script
