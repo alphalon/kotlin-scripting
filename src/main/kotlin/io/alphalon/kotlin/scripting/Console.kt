@@ -151,3 +151,43 @@ fun echoTable(separator: String = "    ") {
         capturedTable.clear()
     }
 }
+
+/**
+ * Returns the best guess of the number of columns and rows in a terminal window.
+ *
+ * If these values could not be determined, returns 80x24.
+ *
+ * @returns A pair of columns and rows
+ */
+fun consoleDimensions(): Pair<Int, Int> {
+    try {
+        // Try tput (may not be installed)
+        try {
+            val rows = execLines("tput lines").firstOrNull()
+            val columns = execLines("tput cols").firstOrNull()
+            if (rows != null && columns != null)
+                return Pair(columns.toInt(), rows.toInt())
+        } catch (e: NumberFormatException) {
+            // Try next method
+        }
+
+        // Try stty (may not recognize stdin as terminal)
+        try {
+            execLines("stty size").firstOrNull()?.let { Regex("""(\d*)\s*(\d*)""").find(it) }?.groupValues?.let { values ->
+                return Pair(values[2].toInt(), values[1].toInt())
+            }
+        } catch (e: NumberFormatException) {
+            // Try next method
+        }
+
+        // Consult environment variables (passed from ko.sh)
+        val rows = System.getenv("LINES")
+        val columns = System.getenv("COLUMNS")
+        if (rows != null && columns != null)
+            return Pair(columns.toInt(), rows.toInt())
+    } catch (e: Exception) {
+        // Return default value
+    }
+
+    return Pair(80, 24)
+}

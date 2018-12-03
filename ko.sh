@@ -608,6 +608,8 @@ if [[ $INTERACTIVE -gt 0 ]]; then
   KSCRIPT_OPTS="--interactive"
 fi
 
+shopt -s checkwinsize
+
 if [[ $IDEA_SCRIPT -gt 0 ]]; then
   # Edit found script in IDEA
   pushd "$(dirname "$KO_SCRIPT")" >/dev/null
