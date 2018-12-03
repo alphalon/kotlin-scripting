@@ -19,7 +19,6 @@
 package io.alphalon.kotlin.scripting
 
 import kotlin.math.max
-import kotlin.streams.toList
 
 private var output = false
 private var quietMode = false

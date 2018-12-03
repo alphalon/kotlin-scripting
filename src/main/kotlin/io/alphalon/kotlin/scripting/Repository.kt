@@ -19,7 +19,6 @@
 package io.alphalon.kotlin.scripting
 
 import java.io.File
-import kotlin.streams.toList
 
 /**
  * Represents a source code repository.
