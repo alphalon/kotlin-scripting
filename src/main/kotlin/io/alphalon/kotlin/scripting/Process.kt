@@ -22,6 +22,7 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import java.util.stream.Stream
+import kotlin.streams.toList
 import kotlin.system.exitProcess
 
 /**
@@ -170,7 +171,7 @@ fun exec(commandLine: String, workingDir: File? = null, console: Boolean = true,
     exec(parseCommandLine(commandLine), workingDir, console, waitForMinutes)
 
 /**
- * Executes the [command], returning a [Stream] of lines from the output.
+ * Executes the [command] asynchronously, returning a [Stream] of lines from the output.
  *
  * @param command A list containing the command and its arguments
  * @param workingDir The directory to execute the command, defaults to the current working directory
@@ -190,11 +191,31 @@ fun execOutput(command: List<String>, workingDir: File? = null): Stream<String> 
 }
 
 /**
- * Executes the [commandLine], returning a [Stream] of lines from the output.
+ * Executes the [commandLine] asynchronously, returning a [Stream] of lines from the output.
  *
  * @param commandLine A string containing the command and its arguments
  * @param workingDir The directory to execute the command, defaults to the current working directory
  * @return The process's standard output and error combined
  */
-fun execOutput(commandLine: String, workingDir: File? = null) =
+fun execOutput(commandLine: String, workingDir: File? = null): Stream<String> =
     execOutput(parseCommandLine(commandLine), workingDir)
+
+/**
+ * Executes the [command], returning a [List] of lines from the output.
+ *
+ * @param command A list containing the command and its arguments
+ * @param workingDir The directory to execute the command, defaults to the current working directory
+ * @return The process's standard output and error combined
+ */
+fun execLines(command: List<String>, workingDir: File? = null): List<String> =
+    execLines(command, workingDir).toList()
+
+/**
+ * Executes the [commandLine], returning a [List] of lines from the output.
+ *
+ * @param commandLine A string containing the command and its arguments
+ * @param workingDir The directory to execute the command, defaults to the current working directory
+ * @return The process's standard output and error combined
+ */
+fun execLines(commandLine: String, workingDir: File? = null): List<String> =
+    execOutput(parseCommandLine(commandLine), workingDir).toList()

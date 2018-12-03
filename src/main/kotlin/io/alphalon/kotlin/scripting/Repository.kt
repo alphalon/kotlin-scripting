@@ -34,10 +34,9 @@ open class Repository(val file: File)
 open class GitRepository(dir: File) : Repository(dir) {
 
     private fun statusFiles(pred: (String) -> Boolean): List<File> =
-        execOutput("git status --porcelain")
+        execLines("git status --porcelain")
             .filter { pred(it) }
             .map { File(it.substring(3).trim('"')) }
-            .toList()
 
     /**
      * Returns whether there are uncommitted changes in the repository.
@@ -45,7 +44,7 @@ open class GitRepository(dir: File) : Repository(dir) {
      * @return True, if the repository is dirty
      */
     fun isDirty(): Boolean =
-        execOutput("git status --porcelain").toList().isNotEmpty()
+        execLines("git status --porcelain").isNotEmpty()
 
     /**
      * Returns a list of modified and tracked files that need to be added to
