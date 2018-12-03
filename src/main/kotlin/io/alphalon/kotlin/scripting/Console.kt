@@ -19,6 +19,7 @@
 package io.alphalon.kotlin.scripting
 
 import kotlin.math.max
+import kotlin.streams.toList
 
 private var output = false
 private var quietMode = false
@@ -55,9 +56,9 @@ fun setQuietMode(quiet: Boolean) {
  *
  * @param message The text to output to the console
  */
-fun echo(message: String? = null) {
+fun echo(message: Any? = null) {
     if (!quietMode) {
-        if (message != null && message.isNotBlank()) {
+        if (message != null && message.toString().isNotBlank()) {
             println(message)
             output = true
         } else {
@@ -109,10 +110,10 @@ fun error(message: String, exitCode: Int = 1): Nothing {
  *
  * @param columns The values for each column to output in a single row
  */
-fun addTableRow(vararg columns: String) {
+fun addTableRow(vararg columns: Any) {
     synchronized(capturedTable) {
         if (columns.isNotEmpty()) {
-            capturedTable.add(columns.toList())
+            capturedTable.add(columns.map { it.toString() })
         }
     }
 }
