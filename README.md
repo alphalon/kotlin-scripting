@@ -48,7 +48,7 @@ Step 2: Create a `scripts` subdirectory in your project's root directory.
 Step 3: Create your first script and add `println("Hello World")` to the end:
 
 ```bash
-ko -c MyFirstScript
+$ ko -c MyFirstScript
 ```
 
 The new script will be created from a template and placed in your `scripts` directory automatically. It will also be opened in your preferred editor so you can get started writing.
@@ -56,7 +56,7 @@ The new script will be created from a template and placed in your `scripts` dire
 Step 4: Run your script from any directory within your project:
 
 ```bash
-ko MyFirstScript
+$ ko MyFirstScript
 ```
 
 ### Usage
@@ -66,7 +66,7 @@ Running `ko` without any arguments or with the `--help` option will print usage 
 #### Executing a script
 
 ```
-ko <command> [args...]
+$ ko <command> [args...]
 ``` 
 
 The command is used to identify which `.kts` script should be called based on the search path. Only the beginning part of the script name needs to be specified, however it much be unambiguous in order for the script to be executed.
@@ -90,7 +90,7 @@ If multiple possible matches are found, no processing will be performed but the 
 #### Listing available commands
 
 ```bash
-ko help
+$ ko help
 ```
 
 Lists the available commands that can be executed from the current directory. If scripts have been documented with a `//CMD <command> <description>` comment, its description will be displayed alongside the command name.
@@ -98,7 +98,7 @@ Lists the available commands that can be executed from the current directory. If
 Run the `ko help --help` command for information about additional options for the help command.
 
 ```
-ko help <command>
+$ ko help <command>
 ```
 
 Detailed information will be output to the console when a command is matched against a script. Scripts that support the `--help` argument will output additional information.
@@ -106,7 +106,7 @@ Detailed information will be output to the console when a command is matched aga
 You can also list the commands defined in the current project:
 
 ```bash
-ko help -p
+$ ko help -p
 ```
 
 Pro Tip: `alias kl='ko help -p'`
@@ -114,7 +114,7 @@ Pro Tip: `alias kl='ko help -p'`
 #### Creating a new script
 
 ```
-ko -c <command>
+$ ko -c <command>
 ```
 
 A new script will be created with the case-sensitive name `<command>.kts`, so it's important to provide the full command name. The directory where the script is created will be the first directory (excluding the current directory) of the search path. If the search path is empty, the current directory will be used.
@@ -124,7 +124,7 @@ The new script will be opened in your editor automatically where you can quickly
 #### Edit an existing script
 
 ```
-ko -e <command>
+$ ko -e <command>
 ```
 
 This uses the same search resolution as executing a script (partial command matching applies) and opens the discovered script using the editor specified by either of the `KO_EDITOR`, `VISUAL`, or `EDITOR` environment variables.
@@ -136,7 +136,7 @@ Alternatively, `ko --idea <command>` leverages kscript to create a temporary pro
 Since each script is a standalone program, it must declare its own dependencies. To ease the pain of keeping versions the same across scripts, this framework includes a command to upgrade your Kotlin scripts:
 
 ```
-ko upgradeDependency [--repo|--project|--module] [version [groupId:artifactId]]
+$ ko upgradeDependency [--repo|--project|--module] [version [groupId:artifactId]]
 ```
 
 Without any arguments, this command will upgrade your nearby scripts to the latest version of this Scripting Library. You can change the scope of the updates using the --repo, --project, or --module options, specify a specific version, and/or upgrade dependencies to other libraries.
@@ -212,7 +212,7 @@ Setting the `KO_TEMPLATE` environment variable to the name of the template file 
 Setting this environment variable in a file like `.ko_project` allows for context-sensitive templating. If your template is located within the project, it's helpful to use the `KO_PROJECT` environment variable like so:
 
 ```bash
-export KO_TEMPLATE="$KO_PROJECT/scripts/custom-project-template"
+$ export KO_TEMPLATE="$KO_PROJECT/scripts/custom-project-template"
 ```
 
 This method also works for the `.ko_repo` and `.ko_module` files.
@@ -283,9 +283,9 @@ Another goal of this library is to help reduce the number of dependencies and im
 Installation is performed by cloning this repository and executing the `./install.sh` script. If you have Homebrew installed, any missing dependencies will also be installed (except Java). Development is done on the master branch, so you may want to checkout a released version.
 
 ```bash
-git clone https://github.com/alphalon/kotlin-scripting
-git checkout tags/v0.1.3
-./install.sh
+$ git clone https://github.com/alphalon/kotlin-scripting
+$ git checkout tags/v0.1.3
+$ ./install.sh
 ```
 
 If the install script detects a $HOME/bin directory, it will create a symlink `ko` to the `ko.sh` file in this repository, assuming this will be added to your execution path.
