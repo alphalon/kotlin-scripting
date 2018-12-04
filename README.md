@@ -127,7 +127,7 @@ The new script will be opened in your editor automatically where you can quickly
 ko -e <command>
 ```
 
-This uses the same search resolution as executing a script (partial command matching applies) and opens the discovered script using the editor specified by either of the `VISUAL` or `EDITOR` environment variables.
+This uses the same search resolution as executing a script (partial command matching applies) and opens the discovered script using the editor specified by either of the `KO_EDITOR`, `VISUAL`, or `EDITOR` environment variables.
 
 Alternatively, `ko --idea <command>` leverages kscript to create a temporary project and edit the file using IntelliJ IDEA.
 
@@ -185,6 +185,7 @@ While kscript supports executing `.kt` files, this framework only calls scripts 
 
 Several environment variables can be set to configure the behavior of the run script:
 
+- `KO_EDITOR` - the command to use when editing new or existing scripts
 - `KO_TEMPLATE` - name of the file to use for a template when creating new scripts
 - `KO_ADDITIONAL_SEARCH_ROOTS` - list of search root directories
 - `KO_ADDITIONAL_SEARCH_DIRS` - list of subdirectories below search roots to find scripts

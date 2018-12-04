@@ -455,7 +455,9 @@ function create-script {
 # Edits the script with the preferred editor
 # Args: file
 function edit-script {
-  if [[ -n $VISUAL ]]; then
+  if [[ -n $KO_EDITOR ]]; then
+    $KO_EDITOR $KO_SCRIPT
+  elif [[ -n $VISUAL ]]; then
     $VISUAL $KO_SCRIPT
   elif [[ -n $EDITOR ]]; then
     $EDITOR $KO_SCRIPT
