@@ -153,13 +153,13 @@ fun commandsInFile(file: File): List<Command> =
  */
 fun commandsInDirectory(directory: File): List<Command> = directory
     .listFiles { _, name -> name.endsWith(".kts") }
-    ?.filter { it.name != "ko.kts" && !it.name.endsWith(".gradle.kts") }
-    ?.map { file ->
+    ?.filter { it.name != "ko.kts" }
+    ?.mapNotNull { file ->
         val scriptName = file.name.removeSuffix(".kts")
         commandsInFile(file)
             .filter { it.name.equals(scriptName, ignoreCase = true) }
             .map { Command(it.name, it.description, file) }
-            .firstOrNull() ?: Command(scriptName, "", file)
+            .firstOrNull()
     } ?: listOf()
 
 /**

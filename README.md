@@ -69,7 +69,7 @@ Running `ko` without any arguments or with the `--help` option will print usage 
 $ ko <command> [args...]
 ``` 
 
-The command is used to identify which `.kts` script should be called based on the search path. Only the beginning part of the script name needs to be specified, however it much be unambiguous in order for the script to be executed.
+The command is used to identify which `.kts` script should be called based on the search path. Only a partial match of the script name needs to be specified, however it much be unambiguous in order for the script to be executed.
 
 What you enter for the command is matched against the beginning of all available commands (case-insensitive). Command name matching is a multi-stage process:
 
@@ -163,11 +163,11 @@ Note: This only applies when executing the script with the `ko` script.
 //CMD <command> <multi-word description>
 ```
 
-The `//CMD` comment is used for documenting the available commands. If not present, the command name is taken from the script name and no description will be shown when the commands are listed.
+The `//CMD` comment is used for identifying and documenting the available commands. It is required in order to distinguish from other uses of Kotlin script files (Gradle build scripts, etc).
 
-This comment is required for command resolution in `ko.kts` scripts, which support implementing multiple commands in a single file. For these scripts, the command is passed as the first argument. These special scripts can also be located in search root directories so creating a `scripts` subdirectory in your project is not necessary.
+This comment may appear more than once for command resolution in `ko.kts` scripts, which support implementing multiple commands in a single file. For these scripts, the command is passed as the first argument. These special scripts can also be located in search root directories so creating a `scripts` subdirectory in your project is not necessary.
 
-The presence of a `//HELP` comment indicates the script supports being called with the `--help` argument to output usage information to the console. 
+The presence of a `//HELP` comment indicates the script supports being called with the `--help` argument to output detailed usage information to the console. 
 
 #### Naming
 

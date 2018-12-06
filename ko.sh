@@ -269,11 +269,6 @@ function find-script {
         fi
       done
       shopt -u nocasematch
-
-      # Use script name if command was not found
-      if [[ $found -eq 0 ]]; then
-        SCRIPTS+=("$name|$path")
-      fi
     done
   fi
 }
