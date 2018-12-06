@@ -23,7 +23,7 @@
 //HELP
 
 //COMPILER_OPTS -jvm-target 1.8
-//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.4-SNAPSHOT
+//DEPS io.alphalon.kotlin:kotlin-scripting:0.1.4
 
 import io.alphalon.kotlin.scripting.*
 import java.io.File
