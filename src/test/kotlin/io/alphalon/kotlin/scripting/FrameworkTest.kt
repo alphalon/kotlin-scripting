@@ -30,7 +30,7 @@ class FrameworkTest {
     }
 
     @Test
-    fun testVersion() {
+    fun `get correct version from framework script`() {
         // Not set by ko.sh
         assertEquals("0.0.1", Framework.frameworkVersion)
 
@@ -39,7 +39,7 @@ class FrameworkTest {
     }
 
     @Test
-    fun testNoDependencies() {
+    fun `return zero dependencies for scripts without any`() {
         val script = File(scriptDir, "TestOne.kts")
         val deps = findScriptDependencies(script)
 
@@ -47,7 +47,7 @@ class FrameworkTest {
     }
 
     @Test
-    fun testSingleDependency() {
+    fun `return single script dependency`() {
         val script = File(scriptDir, "TestTwo.kts")
         val deps = findScriptDependencies(script)
 
@@ -56,7 +56,7 @@ class FrameworkTest {
     }
 
     @Test
-    fun testMultipleDependencies() {
+    fun `return multiple dependencies found in script`() {
         val script = File(scriptDir, "TestThree.kts")
         val deps = findScriptDependencies(script)
 
@@ -69,7 +69,7 @@ class FrameworkTest {
     }
 
     @Test
-    fun testAvailableCommands() {
+    fun `return list of available commands found on search path`() {
         val commands = availableCommands()
 
         assertEquals(5, commands.count())
@@ -81,17 +81,17 @@ class FrameworkTest {
     }
 
     @Test
-    fun testSearchForMissingCommand() {
+    fun `return null when searching for non-existing command`() {
         assertNull(searchForCommand("invalid"))
     }
 
     @Test
-    fun testSearchForAmbiguousCommand() {
+    fun `return null when searching for ambiguous command`() {
         assertNull(searchForCommand("test"))
     }
 
     @Test
-    fun testSearchForSpecificCommand() {
+    fun `return specific command after entering more characters to remove ambiguity`() {
         val command = Command("testOne", "Test 1 script", File(scriptDir, "TestOne.kts").absoluteFile)
 
         assertEquals(command, searchForCommand("testO"))
@@ -100,7 +100,7 @@ class FrameworkTest {
     }
 
     @Test
-    fun testCommandsInScript() {
+    fun `return all commands found in script in special ko kts script`() {
         val script = File(scriptDir, "ko.kts").absoluteFile
         val commands = commandsInFile(script)
 
@@ -110,7 +110,7 @@ class FrameworkTest {
     }
 
     @Test
-    fun testCommandsInScriptWithInvalid() {
+    fun `ensure non-matching command directives are not returned`() {
         val script = File(scriptDir, "TestTwo.kts").absoluteFile
         val commands = commandsInFile(script)
 
@@ -120,7 +120,7 @@ class FrameworkTest {
     }
 
     @Test
-    fun testCommandprovidesHelp() {
+    fun `properly identify whether scripts provide usage help`() {
         assertTrue(commandProvidesHelp(searchForCommand("hello")!!))
         assertTrue(commandProvidesHelp(searchForCommand("goodbye")!!))
         assertTrue(commandProvidesHelp(searchForCommand("testTwo")!!))
