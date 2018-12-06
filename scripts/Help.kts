@@ -108,5 +108,5 @@ if (arguments.isNotEmpty()) {
         }
         echoTable()
     } else
-        error("Unable to locate any commands for this context")
+        error("Unable to locate any commands for this context and scope")
 }

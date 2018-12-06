@@ -46,7 +46,7 @@ val project: GradleProject = currentProject()
 // Make sure there are no changed files
 val dirty = repo.isDirty()
 if (dirty && !force)
-    error("Cannot change the version with with changed files in the repository")
+    error("Cannot change the version with changed files in the repository")
 
 val snapshotSuffix = "-SNAPSHOT"
 fun String.isSnapshot() = endsWith(snapshotSuffix)
