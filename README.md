@@ -121,6 +121,8 @@ A new script will be created with the case-sensitive name `<command>.kts`, so it
 
 The new script will be opened in your editor automatically where you can quickly delete the parts of the template that you don't need or want.
 
+Use the `ko -c ko.kts` command to create a `ko.kts` script in the current directory.
+
 #### Edit an existing script
 
 ```

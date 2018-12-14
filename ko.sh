@@ -48,19 +48,19 @@ fi
 # Process options
 while [[ -n $1 && $1 == -* ]]; do
   case $1 in
-  "-c" | "--create") CREATE_SCRIPT=1; shift;;
-  "-e" | "--edit") EDIT_SCRIPT=1; shift;;
-  "-i" | "--interactive") INTERACTIVE=1; shift;;
-  "-i" | "--idea") IDEA_SCRIPT=1; shift;;
-  "-s" | "--search-path") PRINT_SEARCH=1; shift;;
-  "-f" | "--file") PRINT_FILE=1; shift;;
-  "-d" | "--dir") PRINT_DIR=1; shift;;
-  "--clean") CLEAR_CACHE=1; shift;;
-  "-v" | "--version") PRINT_VERSION=1; shift;;
-  "--verbose") VERBOSE=1; shift;;
-  "--debug") DEBUG=1; shift;;
-  "--completion") COMPLETION=1; shift;;
-  *) echo "Ignoring unknown option: $1"; shift;;
+    "-c" | "--create") CREATE_SCRIPT=1; shift;;
+    "-e" | "--edit") EDIT_SCRIPT=1; shift;;
+    "-i" | "--interactive") INTERACTIVE=1; shift;;
+    "-i" | "--idea") IDEA_SCRIPT=1; shift;;
+    "-s" | "--search-path") PRINT_SEARCH=1; shift;;
+    "-f" | "--file") PRINT_FILE=1; shift;;
+    "-d" | "--dir") PRINT_DIR=1; shift;;
+    "--clean") CLEAR_CACHE=1; shift;;
+    "-v" | "--version") PRINT_VERSION=1; shift;;
+    "--verbose") VERBOSE=1; shift;;
+    "--debug") DEBUG=1; shift;;
+    "--completion") COMPLETION=1; shift;;
+    *) echo "Ignoring unknown option: $1"; shift;;
   esac
 done
 
@@ -400,13 +400,21 @@ function create-script {
   done
   unset 'sd[${#sd[@]}-1]'
 
-  # Don't prefer current directory
-  if [[ ${#sd[@]} -gt 1 ]]; then
-    local dir="${sd[1]}"
+  local extension="${1##*.}"
+  if [[ -n $extension ]]; then
+    # Create and edit specified file
+    local script=$1
+    export KO_COMMAND=$1
+    export KO_SCRIPT=$1
   else
-    local dir="${sd[0]}"
+    # Don't prefer current directory
+    if [[ ${#sd[@]} -gt 1 ]]; then
+      local dir="${sd[1]}"
+    else
+      local dir="${sd[0]}"
+    fi
+    local script="$dir/$1.kts"
   fi
-  local script="$dir/$1.kts"
 
   if [[ ! -e "$script" ]]; then
     # Locate script template
@@ -427,7 +435,7 @@ function create-script {
       sed -i .tmp "s:<project>:$(basename "$KO_PROJECT"):g" "$script"
     fi
     sed -i .tmp "s:<file>:$(basename "$script"):g" "$script"
-    if [[ $COMMAND != "ko" ]]; then
+    if [[ $COMMAND != "ko" && $COMMAND != "ko.kts" ]]; then
       local name="$(tr '[:upper:]' '[:lower:]' <<< ${COMMAND:0:1})${COMMAND:1}"
       sed -i .tmp "s/<command>/$name/g" "$script"
     fi
@@ -513,63 +521,64 @@ if [[ $CREATE_SCRIPT == 1 ]]; then
   create-script "$COMMAND"
 fi
 
-# Search for matching script
-KO_COMMAND=
-IFS=':' read -ra PATHS <<< "${KO_SEARCH_PATH}"
-SCRIPTS=()
-find-script-or-command "$COMMAND"
+if [[ -z $KO_COMMAND ]]; then
+  # Search for matching script
+  IFS=':' read -ra PATHS <<< "${KO_SEARCH_PATH}"
+  SCRIPTS=()
+  find-script-or-command "$COMMAND"
 
-# Try fuzzy search when nothing is found
-if [[ ${#SCRIPTS[@]} -eq 0 ]]; then
-  WORD_FUZZY=$(echo "$COMMAND" | sed -e 's/\([[:upper:]]\)/*\1/g')
-  find-script-or-command "$WORD_FUZZY"
-fi
-if [[ ${#SCRIPTS[@]} -eq 0 ]]; then
-  LETTER_FUZZY=$(echo "$COMMAND" | sed -e 's/\([[:alpha:]]\)/*\1/g')
-  find-script-or-command "$LETTER_FUZZY"
-fi
+  # Try fuzzy search when nothing is found
+  if [[ ${#SCRIPTS[@]} -eq 0 ]]; then
+    WORD_FUZZY=$(echo "$COMMAND" | sed -e 's/\([[:upper:]]\)/*\1/g')
+    find-script-or-command "$WORD_FUZZY"
+  fi
+  if [[ ${#SCRIPTS[@]} -eq 0 ]]; then
+    LETTER_FUZZY=$(echo "$COMMAND" | sed -e 's/\([[:alpha:]]\)/*\1/g')
+    find-script-or-command "$LETTER_FUZZY"
+  fi
 
-if [[ $DEBUG -gt 0 ]]; then
-  echo "All matches:"
-  for s in "${SCRIPTS[@]}"; do
-    IFS='|' read -ra PARSED <<< "$s"
-    printf "%-23s %s\n" "${PARSED[0]}" "${PARSED[1]}"
-  done
-fi
+  if [[ $DEBUG -gt 0 ]]; then
+    echo "All matches:"
+    for s in "${SCRIPTS[@]}"; do
+      IFS='|' read -ra PARSED <<< "$s"
+      printf "%-23s %s\n" "${PARSED[0]}" "${PARSED[1]}"
+    done
+  fi
 
-# Return completions
-if [[ $COMPLETION -gt 0 ]]; then
-  for s in "${SCRIPTS[@]}"; do
-    IFS='|' read -ra PARSED <<< "$s"
-    CMD="${PARSED[0]}"
-    if [[ ! $CMD = *.gradle ]]; then
-      echo "$CMD"
-    fi
-  done
-  exit 0
-fi
+  # Return completions
+  if [[ $COMPLETION -gt 0 ]]; then
+    for s in "${SCRIPTS[@]}"; do
+      IFS='|' read -ra PARSED <<< "$s"
+      CMD="${PARSED[0]}"
+      if [[ ! $CMD = *.gradle ]]; then
+        echo "$CMD"
+      fi
+    done
+    exit 0
+  fi
 
-# Check to make sure we only found one script
-if [[ ${#SCRIPTS[@]} -eq 0 ]]; then
-  echo "ERROR: could not find script matching '$COMMAND'"
-  exit 1
-fi
-if [[ ${#SCRIPTS[@]} -gt 1 ]]; then
-  check-results "$COMMAND"
-  if [[ -n $EXACT_COMMAND ]]; then
-    export KO_COMMAND="$EXACT_COMMAND"
-    export KO_SCRIPT="$EXACT_SCRIPT"
-  elif [[ $IDENTICAL -eq 0 ]]; then
-    echo "ERROR: found too many scripts matching '$COMMAND':"
-    echo
-    printf "%s\n" "${SCRIPTS[@]}" | column -t -s \|
+  # Check to make sure we only found one script
+  if [[ ${#SCRIPTS[@]} -eq 0 && $CREATE_SCRIPT -eq 0 ]]; then
+    echo "ERROR: could not find script matching '$COMMAND'"
     exit 1
   fi
-fi
-if [[ -z $KO_COMMAND ]]; then
-  IFS='|' read -ra PARSED <<< "${SCRIPTS[0]}"
-  export KO_COMMAND="${PARSED[0]}"
-  export KO_SCRIPT="${PARSED[1]}"
+  if [[ ${#SCRIPTS[@]} -gt 1 ]]; then
+    check-results "$COMMAND"
+    if [[ -n $EXACT_COMMAND ]]; then
+      export KO_COMMAND="$EXACT_COMMAND"
+      export KO_SCRIPT="$EXACT_SCRIPT"
+    elif [[ $IDENTICAL -eq 0 ]]; then
+      echo "ERROR: found too many scripts matching '$COMMAND':"
+      echo
+      printf "%s\n" "${SCRIPTS[@]}" | column -t -s \|
+      exit 1
+    fi
+  fi
+  if [[ -z $KO_COMMAND ]]; then
+    IFS='|' read -ra PARSED <<< "${SCRIPTS[0]}"
+    export KO_COMMAND="${PARSED[0]}"
+    export KO_SCRIPT="${PARSED[1]}"
+  fi
 fi
 export KO_SCRIPT_DIR="$(basename "$KO_SCRIPT")"
 
