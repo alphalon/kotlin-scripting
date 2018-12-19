@@ -615,6 +615,10 @@ if [[ $INTERACTIVE -gt 0 ]]; then
 fi
 
 shopt -s checkwinsize
+if hash tput 2>/dev/null; then
+  export LINES=$(tput lines)
+  export COLUMNS=$(tput cols)
+fi
 
 if [[ $IDEA_SCRIPT -gt 0 ]]; then
   # Edit found script in IDEA
