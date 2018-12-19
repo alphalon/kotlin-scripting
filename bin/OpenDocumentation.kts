@@ -15,5 +15,5 @@ import java.io.File
 val project: GradleProject = currentProject()
 project.exec("dokka").fail()
 
-val index = File(Framework.projectDir, "build/dokka/scripting/io.alphalon.kotlin.scripting/index.html")
+val index = File(Framework.projectDir, "build/dokka/scripting/index.html")
 index.open("The documentation was not generated")
