@@ -24,24 +24,25 @@
 # NOTE: Reserve options for -r, -p, and -m. These may be used for scoping
 # operations to the repository, project, or module in the future.
 
+export KO_PREFIX=$(basename "$0")
+
 # Keep documented options in sync with ko-completion.sh
 if [[ -z $1 || $1 == "-h" || $1 == "--help" ]]; then
-  echo "Usage:"
-  echo "  ko [options...] command [args...]"
+  echo "Usage: $KO_PREFIX [options] command [args...]"
   echo
   echo "The command can be an abbreviation for matching the script to execute,"
   echo "while the args are passed on to that script."
   echo
   echo "Options:"
-  echo "  -c,--create         Creates and edits a new script named <command>.kts"
-  echo "  -e,--edit           Edits the existing script matching <command>"
-  echo "  -i,--interactive    Starts an interactive session for a script"
-  echo "  -s,--search-path    Prints the search path for the current directory"
-  echo "  -f,--file           Prints the filename of the matching script"
-  echo "  -d,--dir            Prints the directory containing the matching script"
-  echo "  -v,--version        Prints the version"
-  echo "  --verbose           Prints information about the script resolution process"
-  echo "  --clean             Clears the kscript compilation cache"
+  echo "  -c, --create         Creates and edits a new script named <command>.kts"
+  echo "  -e, --edit           Edits the existing script matching <command>"
+  echo "  -i, --interactive    Starts an interactive session for a script"
+  echo "  -s, --search-path    Prints the search path for the current directory"
+  echo "  -f, --file           Prints the filename of the matching script"
+  echo "  -d, --dir            Prints the directory containing the matching script"
+  echo "  -v, --version        Prints the version"
+  echo "  --verbose            Prints information about the script resolution process"
+  echo "  --clean              Clears the kscript compilation cache"
   exit 0
 fi
 
@@ -302,6 +303,16 @@ function find-script-or-command {
       find-command "$1" "$p"
     fi
   done
+}
+
+# Retrieves the description for the command
+# Args: command script
+function get-description {
+  local desc=$(sed -n -e "s/^\/\/CMD $1\([ -]*\)\(.*\)/\2/p" "$2")
+  desc=$(echo -e "$desc" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+  # echo "Command description: $desc"
+
+  export KO_DESC="$desc"
 }
 
 # Checks the search results for partial and exact matches
@@ -579,6 +590,7 @@ if [[ -z $KO_COMMAND ]]; then
     export KO_COMMAND="${PARSED[0]}"
     export KO_SCRIPT="${PARSED[1]}"
   fi
+  get-description "$KO_COMMAND" "$KO_SCRIPT"
 fi
 export KO_SCRIPT_DIR="$(basename "$KO_SCRIPT")"
 
