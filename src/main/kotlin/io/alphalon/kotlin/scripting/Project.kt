@@ -52,6 +52,12 @@ open class Project(val file: File) {
     open fun exec(vararg args: String): Process {
         throw NotImplementedError()
     }
+
+    /**
+     * Returns a [File] representing the [path] relative to the project
+     * directory.
+     */
+    fun file(path: String): File = File(file.parentFile, path)
 }
 
 /**

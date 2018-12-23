@@ -10,10 +10,7 @@
 //DEPS io.alphalon.kotlin:kotlin-scripting:0.2.0-SNAPSHOT
 
 import io.alphalon.kotlin.scripting.*
-import java.io.File
 
 val project: GradleProject = currentProject()
 project.exec("dokka").fail()
-
-val index = File(Framework.projectDir, "build/dokka/scripting/index.html")
-index.open("The documentation was not generated")
+project.file("build/dokka/scripting/index.html").open(errorMessage = "The documentation was not generated")
