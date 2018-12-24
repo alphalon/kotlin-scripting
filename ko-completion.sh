@@ -46,9 +46,9 @@ function ko-completions {
   if [[ $cmdw -eq 0 || ($COMP_CWORD -lt $cmdw && ($helpw -eq 0 || $COMP_CWORD -lt $helpw)) ]]; then
     # Get matching options (for ko.sh script)
     if [[ $cword == --* ]]; then
-      COMPREPLY=($(compgen -W "--create --edit --search-path --file --dir --version --verbose --help" -- "$cword"))
+      COMPREPLY=($(compgen -W "--create --edit --interactive --search-path --file --dir --version --verbose --clean --help" -- "$cword"))
     elif [[ $cword == -* ]]; then
-      COMPREPLY=($(compgen -W "-c -e -s -f -d -v -h" -- "$cword"))
+      COMPREPLY=($(compgen -W "-c -e -i -s -f -d -v -h" -- "$cword"))
     fi
     COMPREPLY=("${COMPREPLY[@]/%/ }")
   elif [[ $COMP_CWORD -eq $cmdw ]]; then
@@ -61,7 +61,7 @@ function ko-completions {
     COMPREPLY=("${COMPREPLY[@]/%/ }")
   else
     # Get matching files and directories
-    COMPREPLY=($(compgen -f  -- "${COMP_WORDS[${COMP_CWORD}]}" ))
+    COMPREPLY=($(compgen -f -- "${COMP_WORDS[${COMP_CWORD}]}"))
 
     for ((ff=0; ff<${#COMPREPLY[@]}; ff++)); do
       test -d "${COMPREPLY[$ff]}" && COMPREPLY[$ff]="${COMPREPLY[$ff]}/"
