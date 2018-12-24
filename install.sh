@@ -43,7 +43,7 @@ if hash brew 2>/dev/null; then
 fi
 
 # Install dependencies using SDKMAN! (https://sdkman.io)
-if [[ -n $SDKMAN_DIR ]]; then
+if [[ -n $SDKMAN_DIR && -f "$SDKMAN_DIR/bin/sdkman-init.sh" ]]; then
   # echo "Installing dependencies with SDKMAN!"
   source "$SDKMAN_DIR/bin/sdkman-init.sh"
   install-package sdk Java java java
