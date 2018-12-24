@@ -23,23 +23,32 @@ if [[ ! -f "ko.sh" ]]; then
 fi
 
 # Checks whether a command is present on the path, installs otherwise
-# Args: name package command
+# Args: cmd name package command
 function install-package {
-  if ! hash $3 2>/dev/null; then
-    echo "Installing $1"
-    if ! brew install $2; then
-      echo "Error installing $1"
+  if ! hash $4 2>/dev/null; then
+    echo "Installing $2"
+    if ! $1 install $3; then
+      echo "Error installing $2"
       exit 2
     fi
   fi
 }
 
-# Install dependencies using Homebrew (if available)
-if hash brew 2>/dev/null ; then
-  # echo "Installing dependencies"
-  install-package Maven maven mvn
-  install-package Kotlin kotlin kotlinc
-  install-package kscript holgerbrandl/tap/kscript kscript
+# Install dependencies using Homebrew (https://brew.sh)
+if hash brew 2>/dev/null; then
+  # echo "Installing dependencies with Homebrew"
+  install-package brew Maven maven mvn
+  install-package brew Kotlin kotlin kotlinc
+  install-package brew kscript holgerbrandl/tap/kscript kscript
+fi
+
+# Install dependencies using SDKMAN! (https://sdkman.io)
+if hash sdk 2>/dev/null; then
+  # echo "Installing dependencies with SDKMAN!"
+  install-package sdk Java java java
+  install-package sdk Maven maven mvn
+  install-package sdk Kotlin kotlin kotlinc
+  install-package sdk kscript kscript kscript
 fi
 
 # Check that dependencies are installed
