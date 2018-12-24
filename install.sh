@@ -43,12 +43,14 @@ if hash brew 2>/dev/null; then
 fi
 
 # Install dependencies using SDKMAN! (https://sdkman.io)
-if hash sdk 2>/dev/null; then
+if [[ -n $SDKMAN_DIR ]]; then
   # echo "Installing dependencies with SDKMAN!"
+  source "$SDKMAN_DIR/bin/sdkman-init.sh"
   install-package sdk Java java java
   install-package sdk Maven maven mvn
   install-package sdk Kotlin kotlin kotlinc
   install-package sdk kscript kscript kscript
+  source "$SDKMAN_DIR/bin/sdkman-init.sh"
 fi
 
 # Check that dependencies are installed
