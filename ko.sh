@@ -251,7 +251,7 @@ function make-search-path {
 function find-script {
   if [[ -d $2 ]]; then
     # echo "Searching $2 for scripts matching $1"
-    files=($(find "$2/" -iname "$1*.kts" -maxdepth 1 -type f | sort))
+    files=($(find "$2/" -maxdepth 1 -iname "$1*.kts" -type f | sort))
     for f in "${files[@]}"; do
       local path=$(echo $f | sed 's,//,/,g')
       local filename=$(basename "$f")
