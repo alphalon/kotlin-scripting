@@ -412,7 +412,7 @@ function create-script {
   unset 'sd[${#sd[@]}-1]'
 
   local extension="${1##*.}"
-  if [[ -n $extension ]]; then
+  if [[ -n $extension && $extension != $1 ]]; then
     # Create and edit specified file
     local script=$1
     export KO_COMMAND=$1
@@ -443,15 +443,15 @@ function create-script {
     # Create new script file
     cp "$KO_TEMPLATE" "$script"
     if [[ -n $KO_PROJECT ]]; then
-      sed -i .tmp "s:<project>:$(basename "$KO_PROJECT"):g" "$script"
+      sed -i.tmp "s:<project>:$(basename "$KO_PROJECT"):g" "$script"
     fi
-    sed -i .tmp "s:<file>:$(basename "$script"):g" "$script"
+    sed -i.tmp "s:<file>:$(basename "$script"):g" "$script"
     if [[ $COMMAND != "ko" && $COMMAND != "ko.kts" ]]; then
       local name="$(tr '[:upper:]' '[:lower:]' <<< ${COMMAND:0:1})${COMMAND:1}"
-      sed -i .tmp "s/<command>/$name/g" "$script"
+      sed -i.tmp "s/<command>/$name/g" "$script"
     fi
     if [[ -n $KO_VERSION ]]; then
-      sed -i .tmp "s/<version>/$KO_VERSION/g" "$script"
+      sed -i.tmp "s/<version>/$KO_VERSION/g" "$script"
     fi
     rm -f "${script}.tmp"
 
