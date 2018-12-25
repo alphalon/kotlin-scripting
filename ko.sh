@@ -308,7 +308,7 @@ function find-script-or-command {
 # Retrieves the description for the command
 # Args: command script
 function get-description {
-  local desc=$(sed -n -e "s/^\/\/CMD $1\([ -]*\)\(.*\)/\2/p" "$2")
+  local desc=$(sed -n -e "s/^\/\/CMD *$1\([ -]*\)\(.*\)/\2/p" "$2")
   desc=$(echo -e "$desc" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
   # echo "Command description: $desc"
 
