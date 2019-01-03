@@ -120,7 +120,7 @@ MODULE_MARKERS=("build.gradle" "build.gradle.kts" "pom.xml" "*.xcodeproj" "packa
 add-to-array "MODULE_MARKERS" "KO_ADDITIONAL_MODULE_MARKERS"
 
 # Subdirectories used for searching for scripts along the search roots
-SEARCH_DIRS=("bin" "scripts")
+SEARCH_DIRS=("scripts" "bin")
 add-to-array "SEARCH_DIRS" "KO_ADDITIONAL_SEARCH_DIRS"
 
 # Searches upward for the top-most directory representing a code repository
