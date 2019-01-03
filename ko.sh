@@ -74,6 +74,9 @@ if [[ $CLEAR_CACHE -gt 0 ]]; then
   kscript --clear-cache
 fi
 
+# Allow nested calls
+export KO_COMMAND=
+
 # Find the directory containing this script
 SOURCE="${BASH_SOURCE[0]}"
 while [[ -h $SOURCE ]]; do
