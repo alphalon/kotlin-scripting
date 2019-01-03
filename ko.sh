@@ -447,6 +447,8 @@ function create-script {
     cp "$KO_TEMPLATE" "$script"
     if [[ -n $KO_PROJECT ]]; then
       sed -i.tmp "s:<project>:$(basename "$KO_PROJECT"):g" "$script"
+    elif [[ -n $KO_REPO ]]; then
+      sed -i.tmp "s:<project>:$(basename "$KO_REPO"):g" "$script"
     fi
     sed -i.tmp "s:<file>:$(basename "$script"):g" "$script"
     if [[ $COMMAND != "ko" && $COMMAND != "ko.kts" ]]; then
