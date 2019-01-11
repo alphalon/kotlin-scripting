@@ -3,6 +3,8 @@
  * Script:  <file>
  */
 
+/* ktlint-disable comment-spacing no-wildcard-imports */
+
 //DIR $PWD
 //CMD <command> - Enter short description here
 
