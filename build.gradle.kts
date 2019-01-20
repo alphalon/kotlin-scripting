@@ -1,5 +1,6 @@
 // Project: kotlin-scripting
 
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import org.jetbrains.dokka.gradle.DokkaTask
 
 group = "io.alphalon.kotlin"
@@ -12,6 +13,7 @@ object Versions {
 plugins {
     kotlin("jvm") version "1.3.11"
     id("maven-publish")
+    id("com.github.ben-manes.versions") version "0.20.0"
 }
 
 buildscript {
@@ -117,5 +119,21 @@ tasks.create("classpath") {
     dependsOn(tasks.assemble)
     doLast {
         println("RUNTIME CLASSPATH: ${configurations.runtimeClasspath.get().asPath}")
+    }
+}
+
+// https://github.com/ben-manes/gradle-versions-plugin
+tasks.named<DependencyUpdatesTask>("dependencyUpdates") {
+    resolutionStrategy {
+        componentSelection {
+            all {
+                val rejected = listOf("alpha", "beta", "rc", "cr", "m", "preview")
+                    .map { qualifier -> Regex("(?i).*[.-]$qualifier[.\\d-]*") }
+                    .any { it.matches(candidate.version) }
+                if (rejected) {
+                    reject("Release candidate")
+                }
+            }
+        }
     }
 }
