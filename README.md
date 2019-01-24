@@ -1,6 +1,6 @@
 # KO - Kotlin Shell Scripting
 
-This project consists of a framework and a library, which can be used together or independently of each other. The framework provides support for running your scripts from the command line while the library provides APIs for your Kotlin scripts.
+This project consists of a framework and a library, which can be used together or independently of each other. The framework provides support for running your scripts from the command line while the library provides functionality for your Kotlin shell scripts and command line programs.
 
 This project builds on the excellent [kscript command line tool](https://github.com/holgerbrandl/kscript). See that project for details on writing Kotlin scripts with just some of these advantages:
 
@@ -9,20 +9,20 @@ This project builds on the excellent [kscript command line tool](https://github.
 - File includes for sharing non-deployed code among scripts
 - Specification of JVM command line arguments
 
-This project has been designed to make using kscript easier without limiting the features or flexibility it provides. For example, scripts can still be run directly from the command line while utilizing (most of) this scripting library.
+This project has been designed to make using kscript easier without limiting the features or flexibility it provides. For example, scripts can still be run directly from the command line while utilizing this scripting library.
 
 ## Scripting Framework
 
-The primary purpose of this framework is to provide a wrapper script, named `ko.sh`, that locates and executes Kotlin scripts. The first argument, which specifies the command or script to execute, is matched against Kotlin scripts through a search path created from multiple directories to well-known locations within a repository, project, or home directory.
+The primary purpose of the framework component is to provide a wrapper script, named `ko.sh`, that locates and executes Kotlin scripts. The first argument, which specifies the command or script to execute, is matched against Kotlin scripts found through a search path created from well-known locations within a repository, project, or home directory structure.
 
-This framework also makes it easy to document and discover the commands that are available for a particular context which is determined by the current directory.
+This framework also makes it easy to document and discover the commands that are available for a particular context (determined by the current directory).
 
 This document assumes the existence of a symlink or alias, named `ko`, that references this project's `ko.sh` shell script, and this will be used throughout this document.
 
 ### Features
 
 - Locates and executes an appropriate script for a given command
-- Documents available commands based on the current directory (context)
+- Documents available commands based on the current directory (or context)
 - Provides a shortcut to create new or edit existing scripts
 - Runs specific scripts in a designated directory (i.e., the project directory)
 - A meta script, `ko.kts`, supports implementing several commands in one file
@@ -35,7 +35,7 @@ This document assumes the existence of a symlink or alias, named `ko`, that refe
 
 The search path is determined by constructing search roots based on the current working directory and your project and/or repository structure every time you execute a command using the `ko` script.
 
-The default search roots include the module directory, project directory, repository directory, and home directory, searched in that order. The search dirs within these directories default to `bin` and `scripts`.
+The default search roots include the module, project, repository, and home directories, searched in that order. The search dirs within these directories default to `bin` and `scripts`.
 
 In addition, the search path starts with the current directory and ends with the `scripts` located alongside the `ko` script.
 
@@ -74,8 +74,8 @@ The command is used to identify which `.kts` script should be called based on th
 What you enter for the command is matched against the beginning of all available commands (case-insensitive). Command name matching is a multi-stage process:
 
 - Exact match with beginning of command name
-- Word fuzzy match where wildcards are added before uppercase letters
-- Letter fuzzy match wildcards are added before every letter
+- Fuzzy word match where wildcards are added before uppercase letters
+- Fuzzy letter match where wildcards are added before every letter
 
 Successful selection (for execution, editing, etc) requires one of the following:
 
@@ -85,7 +85,7 @@ Successful selection (for execution, editing, etc) requires one of the following
 
 In the case of successfully matching against multiple scripts (or implementations of the same command), the first one on the search path is chosen.
 
-If multiple possible matches are found, no processing will be performed but the matching commands are displayed to enable the user to disambiguate between them easily. (There is a non-zero exit code to detect this situation from other shell scripts.)
+If multiple possible matches are found, no processing will be performed but the matching commands are displayed to enable you to disambiguate between them easily. (There is a non-zero exit code to detect this situation from other shell scripts.)
 
 #### Listing available commands
 
@@ -109,7 +109,7 @@ You can also list the commands defined in the current project:
 $ ko help -p
 ```
 
-Pro Tip: `alias kl='ko help -p'`
+Pro Tip: To see the available commands in the nearest scope, try: `alias kl='ko help -s'`
 
 #### Creating a new script
 
@@ -153,7 +153,7 @@ The framework defines several special comments that can be placed in your Kotlin
 //DIR <dir-spec>
 ```
 
-The DIR comment specifies in which directory the script should be executed. If not present, scripts will be executed in the working directory.
+The DIR comment specifies in which directory the script should be executed. If not present, scripts will be executed in the current working directory.
 
 The _dir-spec_ supports an absolute path, a path relative to the home directory using the tilde notation, and variable substitution to an absolute path using the dollar sign ($).
 
@@ -167,7 +167,7 @@ Note: This only applies when executing the script with the `ko` script.
 
 The `//CMD` comment is used for identifying and documenting the available commands. It is required in order to distinguish from other uses of Kotlin script files (Gradle build scripts, etc).
 
-This comment may appear more than once for command resolution in `ko.kts` scripts, which support implementing multiple commands in a single file. For these scripts, the command is passed as the first argument. These special scripts can also be located in search root directories so creating a `scripts` subdirectory in your project is not necessary.
+This comment may appear more than once for command resolution in `ko.kts` scripts, which support implementing multiple commands in a single file. For these scripts, the command is passed as the first argument. These special scripts can also be located in search root directories so creating a `scripts` subdirectory in your project is not necessary when only utilizing this meta script.
 
 The presence of a `//HELP` comment indicates the script supports being called with the `--help` argument to output detailed usage information to the console. 
 
@@ -195,7 +195,7 @@ Several environment variables can be set to configure the behavior of the run sc
 - `KO_ADDITIONAL_PROJECT_MARKERS` - additional markers used to locate project directories
 - `KO_ADDITIONAL_MODULE_MARKERS` - additional markers used to local modules within a project
 
-All of these settings are multi-valued and use colons (:) as the delimiter.
+All of these 'additional' settings are multi-valued and use colons (:) as the delimiter.
 
 #### Special marker files
 
@@ -234,14 +234,14 @@ These environment variables are available to your Kotlin script when called via 
 - `KO_COMMAND` - the resolved command name
 - `KO_SCRIPT` - the filename of the script being executed
 - `KO_SCRIPT_DIR` - the directory of the script file being executed
-- `KO_SEARCH_PATH` - the list of files and directories used to search for scripts
-- `KO_REPO` - the top-level directory of the source code repository, optional
-- `KO_PROJECT` - the top-level directory of current project, optional
-- `KO_MODULE` - the nearest directory representing a module, optional
+- `KO_SEARCH_PATH` - the list of files and directories used to search for commands and scripts
+- `KO_REPO` - the top-level directory of the source code repository, if found
+- `KO_PROJECT` - the top-level directory of current project, if found
+- `KO_MODULE` - the nearest directory representing a module, if found
 - `KO_REPO_FILE` - the marker identifying the repository
-- `KO_PROJECT_FILE` - the primary build file used for the project
+- `KO_PROJECT_FILE` - the primary build file (marker) used for the project
 
-The `Framework` class in the scripting library provides convenient access to the runtime environment setup by the framework.
+The `Framework` class in the scripting library provides convenient access to the runtime environment setup by the framework script.
 
 ## Scripting Library
 
@@ -327,7 +327,7 @@ You can run the `repl.sh` script in the project root directory to start a Kotlin
 
 ## TODO
 
-- Split argument parsing in multi-platform library
+- Split argument parsing into a multi-platform library
 - Develop the library with useful stuff
 - Publish the library to Maven Central
 - Publish the framework to Homebrew
@@ -336,7 +336,7 @@ And lots of other things... feedback and contributions are welcome!
 
 ## License
 
-Copyright (c) 2018 Alphalon, LLC. All rights reserved.
+Copyright (c) 2018-2019 Alphalon, LLC. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
