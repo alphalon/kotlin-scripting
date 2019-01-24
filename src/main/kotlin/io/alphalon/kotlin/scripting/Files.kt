@@ -21,6 +21,7 @@ package io.alphalon.kotlin.scripting
 import java.io.File
 import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
+import java.util.stream.Stream
 
 /**
  * Returns the current working directory.
@@ -107,7 +108,6 @@ private class FindFileVisitor(val matcher: PathMatcher, val type: FileType) : Si
  * @param glob The filename matching operator
  * @param type The type of files to return
  * @param maxDepth The maximum depth to traverse
- * @param hidden Whether to search hidden files and directories
  * @return The found files
  */
 fun File.find(glob: String, type: FileType = FileType.FILE, maxDepth: Int = Int.MAX_VALUE): List<File> {
@@ -126,7 +126,6 @@ fun File.find(glob: String, type: FileType = FileType.FILE, maxDepth: Int = Int.
  * @param regex The regular expression to match filenames
  * @param type The type of files to return
  * @param maxDepth The maximum depth to traverse
- * @param hidden Whether to search hidden files and directories
  * @return The found files
  */
 fun File.find(regex: Regex, type: FileType = FileType.FILE, maxDepth: Int = Int.MAX_VALUE): List<File> {
@@ -175,4 +174,47 @@ fun File.replace(match: String, replacement: String): Boolean {
         writeText(newLines.text())
 
     return changed
+}
+
+/**
+ * Copies a file to a [destination]. By default, will not overwrite a newer
+ * file.
+ *
+ * If the destination is an existing directory, the destination filename will
+ * be the same as the original file. If the destination does not already exist,
+ * it will be used to determine the full path.
+ *
+ * @param destination The file or directory to copy the file to
+ * @param overwrite Whether to overwrite newer files
+ * @param preserve Whether to preserve the file modification time
+ */
+fun File.copy(destination: File, overwrite: Boolean = false, preserve: Boolean = true) {
+    val dest = if (destination.isDirectory) File(destination, name) else destination
+    if (overwrite || lastModified() > dest.lastModified()) {
+        copyTo(dest, overwrite = true)
+
+        if (preserve)
+            dest.setLastModified(lastModified())
+    }
+}
+
+/**
+ * Deletes the collection of files.
+ */
+fun Iterable<File>.delete() {
+    forEach { it.delete() }
+}
+
+/**
+ * Deletes the collection of files.
+ */
+fun Sequence<File>.delete() {
+    forEach { it.delete() }
+}
+
+/**
+ * Deletes the collection of files.
+ */
+fun Stream<File>.delete() {
+    forEach { it.delete() }
 }
