@@ -91,7 +91,17 @@ fun Process.fail(message: String? = null, block: (() -> Unit)? = null) {
  * @return A list containing the command and its arguments
  */
 private fun parseCommandLine(commandLine: String): List<String> {
-    return commandLine.split(" ")
+    return commandLine.words()
+}
+
+/**
+ * Converts an [obj] into a String argument for [ProcessBuilder].
+ */
+private fun argumentString(obj: Any?): String? = when (obj) {
+    null -> null
+    is String -> obj
+    is File -> obj.path
+    else -> obj.toString()
 }
 
 /**
@@ -103,8 +113,8 @@ private fun parseCommandLine(commandLine: String): List<String> {
  * @param waitForMinutes The timeout value for the process to terminate
  * @return The Java [Process]
  */
-fun exec(command: List<String>, workingDir: File? = null, console: Boolean = true, waitForMinutes: Long = 60): Process {
-    val builder = ProcessBuilder(command).apply {
+fun exec(command: List<Any?>, workingDir: File? = null, console: Boolean = true, waitForMinutes: Long = 60): Process {
+    val builder = ProcessBuilder(command.mapNotNull(::argumentString)).apply {
         workingDir?.let { directory(it) }
 
         if (console)
@@ -135,28 +145,8 @@ fun exec(command: List<String>, workingDir: File? = null, console: Boolean = tru
  * @param waitForMinutes The timeout value for the process to terminate
  * @return The Java [Process]
  */
-fun exec(vararg command: String, workingDir: File? = null, console: Boolean = true, waitForMinutes: Long = 60): Process {
-    val builder = ProcessBuilder(*command).apply {
-        workingDir?.let { directory(it) }
-
-        if (console)
-            redirectOutput(ProcessBuilder.Redirect.INHERIT)
-
-        redirectError(ProcessBuilder.Redirect.INHERIT)
-    }
-
-    try {
-        return builder.start().apply {
-            try {
-                waitFor(waitForMinutes, TimeUnit.MINUTES)
-            } catch (e: InterruptedException) {
-                warning("the process (${command.first()}) is taking longer than $waitForMinutes minutes")
-            }
-        }
-    } catch (e: IOException) {
-        error(e.message.toString())
-    }
-}
+fun exec(vararg command: Any?, workingDir: File? = null, console: Boolean = true, waitForMinutes: Long = 60): Process =
+    exec(command.toList(), workingDir, console, waitForMinutes)
 
 /**
  * Executes the [commandLine], waiting for the process to finish.
@@ -177,8 +167,8 @@ fun exec(commandLine: String, workingDir: File? = null, console: Boolean = true,
  * @param workingDir The directory to execute the command, defaults to the current working directory
  * @return The process's standard output and error combined
  */
-fun execOutput(command: List<String>, workingDir: File? = null): Stream<String> {
-    val builder = ProcessBuilder(command).apply {
+fun execOutput(command: List<Any?>, workingDir: File? = null): Stream<String> {
+    val builder = ProcessBuilder(command.mapNotNull(::argumentString)).apply {
         workingDir?.let { directory(it) }
         redirectErrorStream(true)
     }
@@ -189,6 +179,15 @@ fun execOutput(command: List<String>, workingDir: File? = null): Stream<String> 
         error(e.message.toString())
     }
 }
+
+/**
+ * Executes the [command] asynchronously, returning a [Stream] of lines from the output.
+ *
+ * @param command A list containing the command and its arguments
+ * @param workingDir The directory to execute the command, defaults to the current working directory
+ * @return The process's standard output and error combined
+ */
+fun execOutput(vararg command: Any?, workingDir: File? = null): Stream<String> = execOutput(command.toList(), workingDir)
 
 /**
  * Executes the [commandLine] asynchronously, returning a [Stream] of lines from the output.
@@ -207,8 +206,18 @@ fun execOutput(commandLine: String, workingDir: File? = null): Stream<String> =
  * @param workingDir The directory to execute the command, defaults to the current working directory
  * @return The process's standard output and error combined
  */
-fun execLines(command: List<String>, workingDir: File? = null): List<String> =
-    execLines(command, workingDir).toList()
+fun execLines(command: List<Any?>, workingDir: File? = null): List<String> =
+    execOutput(command, workingDir).toList()
+
+/**
+ * Executes the [command], returning a [List] of lines from the output.
+ *
+ * @param command A list containing the command and its arguments
+ * @param workingDir The directory to execute the command, defaults to the current working directory
+ * @return The process's standard output and error combined
+ */
+fun execLines(vararg command: Any?, workingDir: File? = null): List<String> =
+    execLines(command.toList(), workingDir)
 
 /**
  * Executes the [commandLine], returning a [List] of lines from the output.
@@ -218,4 +227,4 @@ fun execLines(command: List<String>, workingDir: File? = null): List<String> =
  * @return The process's standard output and error combined
  */
 fun execLines(commandLine: String, workingDir: File? = null): List<String> =
-    execOutput(parseCommandLine(commandLine), workingDir).toList()
+    execLines(parseCommandLine(commandLine), workingDir)
