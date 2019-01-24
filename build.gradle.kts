@@ -7,11 +7,11 @@ group = "io.alphalon.kotlin"
 version = "0.2.0-SNAPSHOT"
 
 object Versions {
-    const val kotlinCoroutines = "1.0.1"
+    const val kotlinCoroutines = "1.1.0"
 }
 
 plugins {
-    kotlin("jvm") version "1.3.11"
+    kotlin("jvm") version "1.3.20"
     id("maven-publish")
     id("com.github.ben-manes.versions") version "0.20.0"
 }
