@@ -108,12 +108,12 @@ object Framework {
 /**
  * Returns the typed repository or terminates the script with an error.
  */
-inline fun <reified T> currentRepo(): T = Framework.repo as? T ?: error("Expecting ${T::class.java.simpleName}")
+inline fun <reified T : Repository> currentRepo(): T = Framework.repo as? T ?: error("Expecting ${T::class.java.simpleName}")
 
 /**
  * Returns the typed project or terminates the script with an error.
  */
-inline fun <reified T> currentProject(): T = Framework.project as? T ?: error("Expecting ${T::class.java.simpleName}")
+inline fun <reified T : Project> currentProject(): T = Framework.project as? T ?: error("Expecting ${T::class.java.simpleName}")
 
 /**
  * Represents a command found on the search path.
