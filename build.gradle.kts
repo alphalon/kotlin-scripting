@@ -7,11 +7,11 @@ group = "io.alphalon.kotlin"
 version = "0.2.0-SNAPSHOT"
 
 object Versions {
-    const val kotlinCoroutines = "1.1.0"
+    const val kotlinCoroutines = "1.1.1"
 }
 
 plugins {
-    kotlin("jvm") version "1.3.20"
+    kotlin("jvm") version "1.3.21"
     id("maven-publish")
     id("com.github.ben-manes.versions") version "0.20.0"
 }
@@ -88,15 +88,15 @@ tasks.jar {
     manifest {
         attributes(
             "Implementation-Title" to "KO - Kotlin Scripting",
-            "Implementation-Version" to version
+            "Implementation-Version" to archiveVersion
         )
     }
 }
 
 // Publish with sources to assist in writing scripts
 task<Jar>("sourcesJar") {
-    classifier = "sources"
-    from(sourceSets.main.get().allJava)
+    archiveClassifier.set("sources")
+    from(sourceSets.main.get().allSource)
 }
 
 publishing {
