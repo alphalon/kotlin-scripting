@@ -20,7 +20,6 @@ package io.alphalon.kotlin.scripting
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.stream.Stream
@@ -34,22 +33,20 @@ import java.util.stream.Stream
  */
 fun <T> Iterable<T>.forEachAsync(action: (T) -> Unit) {
     runBlocking(Dispatchers.IO) {
-        coroutineScope {
-            val channel = Channel<T>()
+        val channel = Channel<T>()
 
-            // Producer
+        // Producer
+        launch {
+            this@forEachAsync.forEach { channel.send(it) }
+
+            channel.close()
+        }
+
+        // Consumers
+        repeat(Runtime.getRuntime().availableProcessors()) {
             launch {
-                this@forEachAsync.forEach { channel.send(it) }
-
-                channel.close()
-            }
-
-            // Consumers
-            repeat(Runtime.getRuntime().availableProcessors()) {
-                launch {
-                    for (item in channel)
-                        action(item)
-                }
+                for (item in channel)
+                    action(item)
             }
         }
     }
@@ -64,22 +61,20 @@ fun <T> Iterable<T>.forEachAsync(action: (T) -> Unit) {
  */
 fun <T> Sequence<T>.forEachAsync(action: (T) -> Unit) {
     runBlocking(Dispatchers.IO) {
-        coroutineScope {
-            val channel = Channel<T>()
+        val channel = Channel<T>()
 
-            // Producer
+        // Producer
+        launch {
+            this@forEachAsync.forEach { channel.send(it) }
+
+            channel.close()
+        }
+
+        // Consumers
+        repeat(Runtime.getRuntime().availableProcessors()) {
             launch {
-                this@forEachAsync.forEach { channel.send(it) }
-
-                channel.close()
-            }
-
-            // Consumers
-            repeat(Runtime.getRuntime().availableProcessors()) {
-                launch {
-                    for (item in channel)
-                        action(item)
-                }
+                for (item in channel)
+                    action(item)
             }
         }
     }
